@@ -1,26 +1,33 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Container, Paper, TextField, Button, Typography } from "@mui/material";
+import { api } from "../api";
 
 const Register: React.FC = () => {
+  const [businessName, setBusinessName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [address, setAddress] = useState("");
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState("admin");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Registered successfully as ${role}! Now login.`);
-    navigate("/login");
+    try {
+      const res = await api.post("/auth/register-business", {
+        Business_Name: businessName,
+        Business_Email: email,
+        Primary_Phone_No: phone,
+        Password: password,
+        Primary_Address: address,
+      });
+
+      alert(`Business registered successfully!\nBusiness ID: ${res.data.Business_ID}`);
+      localStorage.setItem("businessId", res.data.Business_ID); // optional: store for later use
+      navigate("/login");
+    } catch {
+      alert("Registration failed. Please check your inputs or try again.");
+    }
   };
 
   return (
@@ -43,65 +50,72 @@ const Register: React.FC = () => {
           textAlign: "center",
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          style={{ fontWeight: "bold", color: "#1976d2" }}
-        >
-          Register
+        <Typography variant="h4" gutterBottom style={{ fontWeight: "bold", color: "#1976d2" }}>
+          Register Your Business
         </Typography>
 
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Username"
+            label="Business Name"
             variant="outlined"
             fullWidth
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ marginBottom: "1.2rem" }}
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            style={{ marginBottom: "1rem" }}
           />
-
-          <FormControl fullWidth style={{ marginBottom: "1.2rem" }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={role}
-              label="Role"
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="storeManager">Store Manager</MenuItem>
-              <MenuItem value="storeStaff">Store Staff</MenuItem>
-              <MenuItem value="storeCashier">Store Cashier</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            label="Business Email"
+            variant="outlined"
+            fullWidth
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Primary Phone No"
+            variant="outlined"
+            fullWidth
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Password"
+            variant="outlined"
+            fullWidth
+            required
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Primary Address"
+            variant="outlined"
+            fullWidth
+            required
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            style={{ marginBottom: "1.5rem" }}
+          />
 
           <Button
             variant="contained"
             color="primary"
             fullWidth
             type="submit"
-            style={{
-              padding: "0.7rem",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              marginTop: "0.5rem",
-            }}
+            style={{ padding: "0.75rem", fontWeight: "bold", borderRadius: "8px" }}
           >
             Register
           </Button>
 
-          <Typography
-            variant="body2"
-            style={{ marginTop: "1.5rem", color: "#555" }}
-          >
-            Already have an account?{" "}
-            <Button
-              color="primary"
-              onClick={() => navigate("/login")}
-              style={{ textTransform: "none" }}
-            >
+          <Typography variant="body2" style={{ marginTop: "1.5rem", color: "#555" }}>
+            Already registered?{" "}
+            <Button color="primary" onClick={() => navigate("/login")} style={{ textTransform: "none" }}>
               Login
             </Button>
           </Typography>

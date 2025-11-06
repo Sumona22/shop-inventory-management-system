@@ -1,32 +1,39 @@
-// src/routes/AppRouter.tsx
-import {useState} from 'react';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import AdminDashboard from "../pages/AdminDashboard";
 import ManagerDashboard from "../pages/StoreManagerDashboard";
-import  NavBar  from '../components/NavBar'
+import NavBar from "../components/NavBar";
+import { useAuth } from "../context/AuthContext";
+
+const ProtectedRoute = ({ children, role }: { children: JSX.Element; role: string }) => {
+  const { token, role: userRole } = useAuth();
+  if (!token || userRole !== role) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
 
 const AppRouter = () => {
-  const [role, setRole] = useState("");
   return (
     <Router>
-      <NavBar/>
+      <NavBar />
       <Routes>
-        {/* Home Page */}
         <Route path="/" element={<Home />} />
-
-        {/* Authentication */}
-        <Route path="/login" element={<Login setRole={setRole} />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Dashboards */}
-        <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        <Route path="/dashboard/storeManager" element={<ManagerDashboard />} />
+        <Route
+          path="/dashboard/admin"
+          element={<ProtectedRoute role="Admin"><AdminDashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/storeManager"
+          element={<ProtectedRoute role="StoreManager"><ManagerDashboard /></ProtectedRoute>}
+        />
       </Routes>
     </Router>
-
   );
 };
 
