@@ -10,7 +10,7 @@ const Home = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(to bottom right, #bbdefb, #64b5f6)",
+        background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
         textAlign: "center",
       }}
     >

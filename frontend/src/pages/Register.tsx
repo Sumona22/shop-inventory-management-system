@@ -1,113 +1,185 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Container,
-  Paper,
+  Box,
   TextField,
   Button,
+  Container,
+  Paper,
   Typography,
   FormControl,
   InputLabel,
-  Select,
-  MenuItem,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
 } from "@mui/material";
+import {
+  Visibility, 
+  VisibilityOff
+} from '@mui/icons-material';
+
+import { registerBusinessAPI } from "../api/auth";
+
+interface IBusiness {
+  Business_Name: string;
+  Business_Email: string;
+  Primary_Phone_No: string;
+  Password: string;
+  Primary_Address: string;
+}
 
 const Register: React.FC = () => {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState("admin");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState<IBusiness>({
+    Business_Name: "",
+    Business_Email: "",
+    Primary_Phone_No: "",
+    Password: "",
+    Primary_Address: "",
+  })
+
+  const navigate = useNavigate();
+
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Registered successfully as ${role}! Now login.`);
-    navigate("/login");
+
+    try {
+      setLoading(true);
+      const res = await registerBusinessAPI(formData);
+
+      alert("Business registered successfully!");
+
+      // Optionally navigate to login page
+      navigate("/login");
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Container
-      maxWidth="xs"
-      style={{
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(to right, #e3f2fd, #bbdefb)",
-      }}
-    >
-      <Paper
-        elevation={6}
-        style={{
-          padding: "2rem",
-          borderRadius: "10px",
-          width: "100%",
+    <div>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
           textAlign: "center",
         }}
       >
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          style={{ fontWeight: "bold", color: "#1976d2" }}
-        >
-          Register
-        </Typography>
-
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Username"
-            variant="outlined"
-            fullWidth
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ marginBottom: "1.2rem" }}
-          />
-
-          <FormControl fullWidth style={{ marginBottom: "1.2rem" }}>
-            <InputLabel>Role</InputLabel>
-            <Select
-              value={role}
-              label="Role"
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="storeManager">Store Manager</MenuItem>
-              <MenuItem value="storeStaff">Store Staff</MenuItem>
-              <MenuItem value="storeCashier">Store Cashier</MenuItem>
-            </Select>
-          </FormControl>
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            type="submit"
-            style={{
-              padding: "0.7rem",
-              borderRadius: "6px",
-              fontWeight: "bold",
-              marginTop: "0.5rem",
-            }}
-          >
-            Register
-          </Button>
-
-          <Typography
-            variant="body2"
-            style={{ marginTop: "1.5rem", color: "#555" }}
-          >
-            Already have an account?{" "}
-            <Button
-              color="primary"
-              onClick={() => navigate("/login")}
-              style={{ textTransform: "none" }}
-            >
-              Login
-            </Button>
+        <Paper
+          elevation={6}
+          sx={{
+            p: 4,
+            borderRadius: "10px",
+            width: "100%",
+            maxWidth: "400px",
+            textAlign: "center",
+            background: "white",
+          }}>
+          <Typography variant="h5" gutterBottom style={{ color: "#1976d2" }}>
+            Register Your Business
           </Typography>
-        </form>
-      </Paper>
-    </Container>
+          <form onSubmit={handleRegister}>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Business Name"
+              name="Business_Name"
+              variant="outlined"
+              value={formData?.Business_Name}
+              onChange={handleChange}
+              required
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Business Email"
+              name="Business_Email"
+              variant="outlined"
+              value={formData?.Business_Email}
+              onChange={handleChange}
+              required
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Primary Phone Number"
+              name="Primary_Phone_No"
+              variant="outlined"
+              value={formData?.Primary_Phone_No}
+              onChange={handleChange}
+              required
+            />
+
+            <FormControl fullWidth margin="normal" variant="outlined">
+              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+              <OutlinedInput
+                id="outlined-adornment-password"
+                type={showPassword ? 'text' : 'password'}
+                name="Password"
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label={
+                        showPassword ? 'hide the password' : 'display the password'
+                      }
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      onMouseUp={handleMouseUpPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+                label="Password"
+              />
+            </FormControl>
+
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Primary Address"
+              name="Primary_Address"
+              variant="outlined"
+              value={formData?.Primary_Address}
+              onChange={handleChange}
+              required
+            />
+
+            <Button variant="contained" color="primary" fullWidth type="submit" style={{ padding: "0.75rem", borderRadius: "8px" }}>
+              Register
+            </Button>
+          </form>
+        </Paper>
+      </Box>
+    </div>
   );
 };
 

@@ -1,66 +1,169 @@
+// src/pages/Login.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Container, Paper, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Container,
+  Paper,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  InputAdornment,
+  IconButton,
+} from "@mui/material";
+import {
+  Visibility,
+  VisibilityOff
+} from '@mui/icons-material';
 
-interface LoginProps {
-  setRole: (role: string) => void;
-}
+import { useAuth } from "../context/AuthContext";
+import type { Role } from "../types/auth";
 
-const Login: React.FC<LoginProps> = ({ setRole }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setUserRole] = useState("admin");
+const Login: React.FC = () => {
+  const [Role, setRole] = useState<Role>("Admin"); // ✅ capital R
+  const [Business_ID, setBusinessID] = useState("");
+  const [Branch_ID, setBranchID] = useState("");
+  const [Personal_ID, setPersonalID] = useState("");
+  const [Password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
-  e.preventDefault();
-  alert(`Logged in as ${role}`);
-  setRole(role);
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  // Redirect user based on their selected role
-  switch (role) {
-    case "admin":
-      navigate("/dashboard/admin");
-      break;
-    case "storeManager":
-      navigate("/dashboard/storeManager");
-      break;
-    case "storeStaff":
-      navigate("/dashboard/storeStaff");
-      break;
-    case "storeCashier":
-      navigate("/dashboard/storeCashier");
-      break;
-    default:
-      navigate("/");
-  }
-};
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
 
+  const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login({ Role, Business_ID, Branch_ID, Personal_ID, Password });
+
+      // Redirect based on Role
+      switch (Role) {
+        case "Admin":
+          navigate("/dashboard/admin");
+          break;
+        case "StoreManager":
+          navigate("/dashboard/storeManager");
+          break;
+        case "StoreStaff":
+          navigate("/dashboard/storeStaff");
+          break;
+        case "Cashier":
+          navigate("/dashboard/storeCashier");
+          break;
+        default:
+          navigate("/");
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Login failed");
+    }
+  };
 
   return (
-    <Container maxWidth="xs" style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(to right, #e3f2fd, #bbdefb)" }}>
-      <Paper elevation={6} style={{ padding: "2rem", borderRadius: "10px", width: "100%", textAlign: "center" }}>
-        <Typography variant="h4" gutterBottom style={{ fontWeight: "bold", color: "#1976d2" }}>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
+        textAlign: "center",
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          p: 4,
+          borderRadius: "10px",
+          width: "100%",
+          maxWidth: "400px",
+          textAlign: "center",
+          background: "white",
+        }}>
+        <Typography variant="h5" gutterBottom style={{ color: "#1976d2" }}>
           Login
         </Typography>
         <form onSubmit={handleLogin}>
-          <TextField label="Email" variant="outlined" fullWidth required value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: "1rem" }} />
-          <TextField label="Password" type="password" variant="outlined" fullWidth required value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: "1rem" }} />
-          <FormControl fullWidth style={{ marginBottom: "1.5rem" }}>
-            <InputLabel>Role</InputLabel>
-            <Select value={role} label="Role" onChange={(e) => setUserRole(e.target.value)}>
-              <MenuItem value="admin">Admin</MenuItem>
-              <MenuItem value="storeManager">Store Manager</MenuItem>
-              <MenuItem value="storeStaff">Store Staff</MenuItem>
-              <MenuItem value="storeCashier">Store Cashier</MenuItem>
+          <TextField
+            label="Business ID"
+            fullWidth
+            margin="normal"
+            required
+            value={Business_ID}
+            onChange={(e) => setBusinessID(e.target.value)}
+          />
+          <TextField
+            label="Branch ID"
+            fullWidth
+            margin="normal"
+            value={Branch_ID}
+            onChange={(e) => setBranchID(e.target.value)}
+          />
+          <TextField
+            label="Personal ID"
+            fullWidth
+            margin="normal"
+            value={Personal_ID}
+            onChange={(e) => setPersonalID(e.target.value)}
+          />
+          <FormControl fullWidth margin="normal" variant="outlined">
+            <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+            <OutlinedInput
+              id="outlined-adornment-password"
+              type={showPassword ? 'text' : 'password'}
+              name="Password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={
+                      showPassword ? 'hide the password' : 'display the password'
+                    }
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                    onMouseUp={handleMouseUpPassword}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+              label="Password"
+            />
+          </FormControl>
+
+          <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
+            <InputLabel id="role-label">Role</InputLabel>
+            <Select
+              labelId="role-label"
+              value={Role}
+              label="Role"
+              onChange={(e) => setRole(e.target.value as Role)}
+            >
+              <MenuItem value="Admin">Admin</MenuItem>
+              <MenuItem value="StoreManager">Store Manager</MenuItem>
+              <MenuItem value="StoreStaff">Store Staff</MenuItem>
+              <MenuItem value="Cashier">Cashier</MenuItem>
             </Select>
           </FormControl>
-          <Button variant="contained" color="primary" fullWidth type="submit" style={{ padding: "0.75rem", fontWeight: "bold", borderRadius: "8px" }}>
+          <Button variant="contained" color="primary" fullWidth type="submit" style={{ padding: "0.75rem", borderRadius: "8px" }}>
             Login
           </Button>
         </form>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 
