@@ -1,169 +1,68 @@
 // src/pages/Login.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  TextField,
-  Button,
-  Container,
-  Paper,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  OutlinedInput,
-  InputAdornment,
-  IconButton,
-} from "@mui/material";
-import {
-  Visibility,
-  VisibilityOff
-} from '@mui/icons-material';
-
+import { TextField, Button, Container, Paper, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
-import type { Role } from "../types/auth";
 
 const Login: React.FC = () => {
-  const [Role, setRole] = useState<Role>("Admin"); // ✅ capital R
-  const [Business_ID, setBusinessID] = useState("");
-  const [Branch_ID, setBranchID] = useState("");
-  const [Personal_ID, setPersonalID] = useState("");
-  const [Password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const { login } = useAuth();
+  const [password, setPassword] = useState("");
+  const [role, setUserRole] = useState("Admin");
+  const [businessId, setBusinessId] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [personalId, setPersonalId] = useState("");
   const navigate = useNavigate();
-
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-  };
-
-  const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-  };
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login({ Role, Business_ID, Branch_ID, Personal_ID, Password });
+      const res = await api.post("/auth/login", {
+        role,
+        Business_ID: role === "Admin" || role === "StoreManager" ? businessId : undefined,
+        Branch_ID: role === "StoreManager" || role === "StoreStaff" || role === "Cashier" ? branchId : undefined,
+        Personal_ID: role === "StoreStaff" || role === "Cashier" ? personalId : undefined,
+        Password: password,
+      });
 
-      // Redirect based on Role
-      switch (Role) {
-        case "Admin":
-          navigate("/dashboard/admin");
-          break;
-        case "StoreManager":
-          navigate("/dashboard/storeManager");
-          break;
-        case "StoreStaff":
-          navigate("/dashboard/storeStaff");
-          break;
-        case "Cashier":
-          navigate("/dashboard/storeCashier");
-          break;
-        default:
-          navigate("/");
-      }
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Login failed");
+      login(res.data.role, res.data.token);
+
+      if (res.data.role === "Admin") navigate("/dashboard/admin");
+      else if (res.data.role === "StoreManager") navigate("/dashboard/storeManager");
+      else navigate("/");
+    } catch {
+      alert("Login failed");
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
-        textAlign: "center",
-      }}
-    >
-      <Paper
-        elevation={6}
-        sx={{
-          p: 4,
-          borderRadius: "10px",
-          width: "100%",
-          maxWidth: "400px",
-          textAlign: "center",
-          background: "white",
-        }}>
-        <Typography variant="h5" gutterBottom style={{ color: "#1976d2" }}>
-          Login
-        </Typography>
+    <Container maxWidth="xs">
+      <Paper sx={{ p: 3, mt: 5 }}>
+        <Typography variant="h4" gutterBottom>Login</Typography>
         <form onSubmit={handleLogin}>
-          <TextField
-            label="Business ID"
-            fullWidth
-            margin="normal"
-            required
-            value={Business_ID}
-            onChange={(e) => setBusinessID(e.target.value)}
-          />
-          <TextField
-            label="Branch ID"
-            fullWidth
-            margin="normal"
-            value={Branch_ID}
-            onChange={(e) => setBranchID(e.target.value)}
-          />
-          <TextField
-            label="Personal ID"
-            fullWidth
-            margin="normal"
-            value={Personal_ID}
-            onChange={(e) => setPersonalID(e.target.value)}
-          />
-          <FormControl fullWidth margin="normal" variant="outlined">
-            <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-password"
-              type={showPassword ? 'text' : 'password'}
-              name="Password"
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={
-                      showPassword ? 'hide the password' : 'display the password'
-                    }
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    onMouseUp={handleMouseUpPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Password"
-            />
-          </FormControl>
-
-          <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
-            <InputLabel id="role-label">Role</InputLabel>
-            <Select
-              labelId="role-label"
-              value={Role}
-              label="Role"
-              onChange={(e) => setRole(e.target.value as Role)}
-            >
+          {role !== "StoreStaff" && role !== "Cashier" && (
+            <TextField label="Business ID" fullWidth value={businessId} onChange={(e) => setBusinessId(e.target.value)} sx={{ mb: 2 }} />
+          )}
+          {(role === "StoreManager" || role === "StoreStaff" || role === "Cashier") && (
+            <TextField label="Branch ID" fullWidth value={branchId} onChange={(e) => setBranchId(e.target.value)} sx={{ mb: 2 }} />
+          )}
+          {(role === "StoreStaff" || role === "Cashier") && (
+            <TextField label="Personal ID" fullWidth value={personalId} onChange={(e) => setPersonalId(e.target.value)} sx={{ mb: 2 }} />
+          )}
+          <TextField label="Password" type="password" fullWidth value={password} onChange={(e) => setPassword(e.target.value)} sx={{ mb: 2 }} />
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Role</InputLabel>
+            <Select value={role} onChange={(e) => setUserRole(e.target.value)}>
               <MenuItem value="Admin">Admin</MenuItem>
               <MenuItem value="StoreManager">Store Manager</MenuItem>
               <MenuItem value="StoreStaff">Store Staff</MenuItem>
               <MenuItem value="Cashier">Cashier</MenuItem>
             </Select>
           </FormControl>
-          <Button variant="contained" color="primary" fullWidth type="submit" style={{ padding: "0.75rem", borderRadius: "8px" }}>
-            Login
-          </Button>
+          <Button type="submit" variant="contained" fullWidth>Login</Button>
         </form>
       </Paper>
-    </Box>
+    </Container>
   );
 };
 

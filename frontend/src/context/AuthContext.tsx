@@ -1,58 +1,42 @@
 // src/context/AuthContext.tsx
 import React, { createContext, useState, useContext } from "react";
-import type { ReactNode } from "react";import type { AuthContextType, LoginPayload, User } from "../types/auth";
-import { loginAPI } from "../api/auth";
 
-interface AuthProviderProps {
-  children: ReactNode;
+interface AuthContextType {
+  role: string | null;
+  token: string | null;
+  login: (role: string, token: string) => void;
+  logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [role, setRole] = useState(localStorage.getItem("role"));
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  const login = async (payload: LoginPayload) => {
-    const res = await loginAPI(payload);
-
-    // Store token
-    localStorage.setItem("token", res.token);
-
-    // Normalize backend response
-    setUser({
-      id: res.id,
-      Role: res.Role,
-      name: res.name || "",
-      email: res.email || "",
-    });
-
-    setIsAuthenticated(true);
+  const login = (newRole: string, newToken: string) => {
+    setRole(newRole);
+    setToken(newToken);
+    localStorage.setItem("role", newRole);
+    localStorage.setItem("token", newToken);
   };
 
   const logout = () => {
+    setRole(null);
+    setToken(null);
+    localStorage.removeItem("role");
     localStorage.removeItem("token");
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  const value: AuthContextType = {
-    user,
-    login,
-    logout,
-    isAuthenticated,
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ role, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook for easy access
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 };

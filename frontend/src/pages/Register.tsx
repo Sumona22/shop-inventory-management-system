@@ -1,185 +1,127 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  TextField,
-  Button,
-  Container,
-  Paper,
-  Typography,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  InputAdornment,
-  IconButton,
-} from "@mui/material";
-import {
-  Visibility, 
-  VisibilityOff
-} from '@mui/icons-material';
-
-import { registerBusinessAPI } from "../api/auth";
-
-interface IBusiness {
-  Business_Name: string;
-  Business_Email: string;
-  Primary_Phone_No: string;
-  Password: string;
-  Primary_Address: string;
-}
+import { Container, Paper, TextField, Button, Typography } from "@mui/material";
+import { api } from "../api";
 
 const Register: React.FC = () => {
-
-  const [formData, setFormData] = useState<IBusiness>({
-    Business_Name: "",
-    Business_Email: "",
-    Primary_Phone_No: "",
-    Password: "",
-    Primary_Address: "",
-  })
-
+  const [businessName, setBusinessName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [address, setAddress] = useState("");
   const navigate = useNavigate();
 
-  const handleChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-  };
-
-  const handleMouseUpPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      setLoading(true);
-      const res = await registerBusinessAPI(formData);
+      const res = await api.post("/auth/register-business", {
+        Business_Name: businessName,
+        Business_Email: email,
+        Primary_Phone_No: phone,
+        Password: password,
+        Primary_Address: address,
+      });
 
-      alert("Business registered successfully!");
-
-      // Optionally navigate to login page
+      alert(`Business registered successfully!\nBusiness ID: ${res.data.Business_ID}`);
+      localStorage.setItem("businessId", res.data.Business_ID); // optional: store for later use
       navigate("/login");
-    } catch (err: any) {
-      console.error(err);
-      alert(err.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+    } catch {
+      alert("Registration failed. Please check your inputs or try again.");
     }
   };
 
   return (
-    <div>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
+    <Container
+      maxWidth="xs"
+      style={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(to right, #e3f2fd, #bbdefb)",
+      }}
+    >
+      <Paper
+        elevation={6}
+        style={{
+          padding: "2rem",
+          borderRadius: "10px",
+          width: "100%",
           textAlign: "center",
         }}
       >
-        <Paper
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: "10px",
-            width: "100%",
-            maxWidth: "400px",
-            textAlign: "center",
-            background: "white",
-          }}>
-          <Typography variant="h5" gutterBottom style={{ color: "#1976d2" }}>
-            Register Your Business
-          </Typography>
-          <form onSubmit={handleRegister}>
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Business Name"
-              name="Business_Name"
-              variant="outlined"
-              value={formData?.Business_Name}
-              onChange={handleChange}
-              required
-            />
+        <Typography variant="h4" gutterBottom style={{ fontWeight: "bold", color: "#1976d2" }}>
+          Register Your Business
+        </Typography>
 
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Business Email"
-              name="Business_Email"
-              variant="outlined"
-              value={formData?.Business_Email}
-              onChange={handleChange}
-              required
-            />
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Business Name"
+            variant="outlined"
+            fullWidth
+            required
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Business Email"
+            variant="outlined"
+            fullWidth
+            required
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Primary Phone No"
+            variant="outlined"
+            fullWidth
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Password"
+            variant="outlined"
+            fullWidth
+            required
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ marginBottom: "1rem" }}
+          />
+          <TextField
+            label="Primary Address"
+            variant="outlined"
+            fullWidth
+            required
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            style={{ marginBottom: "1.5rem" }}
+          />
 
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Primary Phone Number"
-              name="Primary_Phone_No"
-              variant="outlined"
-              value={formData?.Primary_Phone_No}
-              onChange={handleChange}
-              required
-            />
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            type="submit"
+            style={{ padding: "0.75rem", fontWeight: "bold", borderRadius: "8px" }}
+          >
+            Register
+          </Button>
 
-            <FormControl fullWidth margin="normal" variant="outlined">
-              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-              <OutlinedInput
-                id="outlined-adornment-password"
-                type={showPassword ? 'text' : 'password'}
-                name="Password"
-                endAdornment={
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={
-                        showPassword ? 'hide the password' : 'display the password'
-                      }
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      onMouseUp={handleMouseUpPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                }
-                label="Password"
-              />
-            </FormControl>
-
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Primary Address"
-              name="Primary_Address"
-              variant="outlined"
-              value={formData?.Primary_Address}
-              onChange={handleChange}
-              required
-            />
-
-            <Button variant="contained" color="primary" fullWidth type="submit" style={{ padding: "0.75rem", borderRadius: "8px" }}>
-              Register
+          <Typography variant="body2" style={{ marginTop: "1.5rem", color: "#555" }}>
+            Already registered?{" "}
+            <Button color="primary" onClick={() => navigate("/login")} style={{ textTransform: "none" }}>
+              Login
             </Button>
-          </form>
-        </Paper>
-      </Box>
-    </div>
+          </Typography>
+        </form>
+      </Paper>
+    </Container>
   );
 };
 

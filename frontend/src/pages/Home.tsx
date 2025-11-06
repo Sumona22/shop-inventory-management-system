@@ -1,7 +1,19 @@
-import { Link } from "react-router-dom";
+// src/pages/Home.tsx
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button, Box, Typography } from "@mui/material";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const role = localStorage.getItem("role");
+
+  useEffect(() => {
+    if (role === "Admin") navigate("/dashboard/admin");
+    else if (role === "StoreManager") navigate("/dashboard/storeManager");
+    else if (role === "StoreStaff") navigate("/dashboard/storeStaff");
+    else if (role === "Cashier") navigate("/dashboard/storeCashier");
+  }, [role, navigate]);
+
   return (
     <Box
       sx={{
@@ -10,7 +22,7 @@ const Home = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(to bottom right, #e2f1fdff, #a9d5f9ff)",
+        background: "linear-gradient(to bottom right, #bbdefb, #64b5f6)",
         textAlign: "center",
       }}
     >
@@ -23,20 +35,10 @@ const Home = () => {
       </Typography>
 
       <Box display="flex" gap={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          to="/login"
-        >
+        <Button variant="contained" color="primary" component="a" href="/login">
           Login
         </Button>
-        <Button
-          variant="contained"
-          color="success"
-          component={Link}
-          to="/register"
-        >
+        <Button variant="contained" color="success" component="a" href="/register">
           Signup
         </Button>
       </Box>
