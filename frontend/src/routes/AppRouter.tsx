@@ -1,11 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
-import Register from "../pages/Register";
-import AdminDashboard from "../pages/AdminDashboard";
+
+import AdminDashboard from "../pages/admin-dashboard/AdminDashboard";
+import AdministratorDashboard from "../pages/admin-dashboard/AdministatorDashboard";
+import BranchPage from "../pages/admin-dashboard/BranchPage";
 import ManagerDashboard from "../pages/StoreManagerDashboard";
 import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
+import ManageBranch from "../pages/admin-dashboard/ManageBranch";
+import AddBranch from "../pages/admin-dashboard/AddBranch";
+import ViewBranch from "../pages/admin-dashboard/ViewBranch";
+import Register from "../pages/Register";
+import StaffDashboard from "../pages/staff-dashboard/StaffDashborad";
 
 const ProtectedRoute = ({ children, role }: { children: JSX.Element; role: string }) => {
   const { token, role: userRole } = useAuth();
@@ -26,12 +33,16 @@ const AppRouter = () => {
 
         <Route
           path="/dashboard/admin"
-          element={<ProtectedRoute role="Admin"><AdminDashboard /></ProtectedRoute>}
+          element={<ProtectedRoute role="Admin"><AdministratorDashboard /></ProtectedRoute>}
         />
         <Route
           path="/dashboard/storeManager"
           element={<ProtectedRoute role="StoreManager"><ManagerDashboard /></ProtectedRoute>}
         />
+        <Route path="/branches" element={<BranchPage />}/>
+        <Route path="/branches/view" element={<ViewBranch />}/>
+        <Route path="/branches/manage" element={<ManageBranch />}/>
+        <Route path="/branches/manage/add" element={<AddBranch />}/>
       </Routes>
     </Router>
   );

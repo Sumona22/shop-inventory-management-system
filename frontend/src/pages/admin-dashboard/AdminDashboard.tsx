@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Paper, Typography, Button, Modal, TextField, MenuItem } from "@mui/material";
-import { api } from "../api";
+import { api } from "../../api";
+
 
 const AdminDashboard: React.FC = () => {
   const [openBranch, setOpenBranch] = useState(false);
@@ -54,6 +55,30 @@ const AdminDashboard: React.FC = () => {
         <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Add Store Manager</Typography>
           <Button variant="contained" onClick={() => setOpenManager(true)}>Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>View & Manage Branch Details</Typography>
+          <Button variant="contained" onClick={() => setOpenBranch(true)}>Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>View & Manage Products</Typography>
+          <Button variant="contained">Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>View Sales Record</Typography>
+          <Button variant="contained">Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>Communication Window</Typography>
+          <Button variant="contained">Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>Place Order to the Suppliers</Typography>
+          <Button variant="contained">Open</Button>
+        </Paper>
+        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Typography fontWeight="bold" mb={2}>Manage Subscription</Typography>
+          <Button variant="contained">Open</Button>
         </Paper>
       </Box>
 

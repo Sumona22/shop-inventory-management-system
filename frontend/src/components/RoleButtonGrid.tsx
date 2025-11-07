@@ -1,4 +1,3 @@
-// src/components/RoleButtonGrid.tsx
 import React from "react";
 
 interface RoleButtonGridProps {
