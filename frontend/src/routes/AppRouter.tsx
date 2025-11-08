@@ -12,7 +12,6 @@ import ManageBranch from "../pages/admin-dashboard/ManageBranch";
 import AddBranch from "../pages/admin-dashboard/AddBranch";
 import ViewBranch from "../pages/admin-dashboard/ViewBranch";
 import Register from "../pages/Register";
-import StaffDashboard from "../pages/staff-dashboard/StaffDashborad";
 
 const ProtectedRoute = ({ children, role }: { children: JSX.Element; role: string }) => {
   const { token, role: userRole } = useAuth();
