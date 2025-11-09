@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Box, Typography } from "@mui/material";
+import { Button, Box, Typography, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
 import logo from "/inventra-logo.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
 
   useEffect(() => {
     if (role === "Admin") navigate("/dashboard/admin");
@@ -23,13 +25,16 @@ const Home = () => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(to bottom right, #bbdefb, #f1f5f9)",
         textAlign: "center",
         overflow: "hidden",
         px: 2,
+        transition: "background 0.6s ease",
+        background: isDark
+          ? "radial-gradient(circle at center, #1e1e1e 0%, #121212 100%)"
+          : "radial-gradient(circle at center, #e3f2fd 0%, #bbdefb 100%)",
       }}
     >
-      {/* Animated Logo with Gradient Border + Shadow */}
+      {/* Animated Logo */}
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -41,7 +46,9 @@ const Home = () => {
         style={{
           borderRadius: "50%",
           padding: "6px",
-          background: "linear-gradient(135deg, #7e57c2, #2196f3)",
+          background: isDark
+            ? "linear-gradient(135deg, #7e57c2, #512da8)"
+            : "linear-gradient(135deg, #7e57c2, #2196f3)",
           display: "inline-block",
           boxShadow: "0px 5px 25px rgba(33, 150, 243, 0.3)",
           marginBottom: "30px",
@@ -66,7 +73,12 @@ const Home = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.8 }}
       >
-        <Typography variant="h3" fontWeight="bold" gutterBottom>
+        <Typography
+          variant="h3"
+          fontWeight="bold"
+          gutterBottom
+          color={isDark ? "#bbdefb" : "text.primary"}
+        >
           Welcome to <span style={{ color: "#1976d2" }}>Inventra 🛒</span>
         </Typography>
         <Typography variant="h6" color="text.secondary" mb={4}>
@@ -76,11 +88,7 @@ const Home = () => {
 
       {/* Buttons */}
       <Box display="flex" gap={2}>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
+        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
           <Button
             variant="contained"
             color="primary"
@@ -90,7 +98,6 @@ const Home = () => {
               px: 4,
               py: 1.2,
               fontWeight: "bold",
-              transition: "0.3s",
               "&:hover": {
                 boxShadow: "0px 0px 15px rgba(33, 150, 243, 0.6)",
               },
@@ -100,11 +107,7 @@ const Home = () => {
           </Button>
         </motion.div>
 
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
+        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
           <Button
             variant="contained"
             color="success"
@@ -114,7 +117,6 @@ const Home = () => {
               px: 4,
               py: 1.2,
               fontWeight: "bold",
-              transition: "0.3s",
               "&:hover": {
                 boxShadow: "0px 0px 15px rgba(76, 175, 80, 0.6)",
               },

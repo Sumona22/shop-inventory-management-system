@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Box, Paper, Typography, Button, Modal, TextField, MenuItem } from "@mui/material";
+import { Box, Typography, Button, Modal, TextField, MenuItem } from "@mui/material";
+
 import { api } from "../../api";
+import BasePaper from "../../components/StyledPaper";
 
 const StoreManagerDashboard: React.FC = () => {
   const [open, setOpen] = useState(false);
@@ -8,7 +10,9 @@ const StoreManagerDashboard: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const branchId = localStorage.getItem("branchId"); // store this after login
+
+
+  const branchId = localStorage.getItem("branchId"); 
 
   const createStaff = async () => {
     try {
@@ -26,32 +30,32 @@ const StoreManagerDashboard: React.FC = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", background: "linear-gradient(to right, #e8f5e9, #c8e6c9)", p: 4 }}>
+    <Box sx={{ minHeight: "100vh", p: 4, bgcolor: "background.default" }}>
       <Typography variant="h4" fontWeight="bold" textAlign="center" mb={4}>
         Store Manager Dashboard
       </Typography>
 
       <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 3 }}>
-        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+        <BasePaper>
           <Typography fontWeight="bold" mb={2}>Add Staff / Cashier</Typography>
           <Button variant="contained" onClick={() => setOpen(true)}>Open</Button>
-        </Paper>
-        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+        </BasePaper>
+        <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>View & Manage Staff / Cashier Details</Typography>
-          <Button variant="contained" onClick={() => setOpen(true)}>Open</Button>
-        </Paper>
-        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Button variant="contained" >Open</Button>
+        </BasePaper>
+        <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>View Sales Record</Typography>
-          <Button variant="contained" onClick={() => setOpen(true)}>Open</Button>
-        </Paper>
-        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Button variant="contained" >Open</Button>
+        </BasePaper>
+        <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Communication Window</Typography>
-          <Button variant="contained" onClick={() => setOpen(true)}>Open</Button>
-        </Paper>
-        <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+          <Button variant="contained" >Open</Button>
+        </BasePaper>
+        <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Stock Alert Notification</Typography>
-          <Button variant="contained" onClick={() => setOpen(true)}>Open</Button>
-        </Paper>
+          <Button variant="contained" >Open</Button>
+        </BasePaper>
       </Box>
 
       <Modal open={open} onClose={() => setOpen(false)}>
