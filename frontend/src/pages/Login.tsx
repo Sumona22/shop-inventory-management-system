@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { TextField, Button, Container, Paper, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { TextField, Button, Box, Paper, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { api } from "../api";
 import { useAuth } from "../context/AuthContext";
 
@@ -37,8 +37,29 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Paper sx={{ p: 3, mt: 5 }}>
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: "background.default", // auto adjusts with dark/light theme
+      }}
+    >
+      <Paper
+        elevation={5}
+        sx={{
+          p: 4,
+          width: "100%",
+          maxWidth: 360,
+          borderRadius: 3,
+          bgcolor: "background.paper",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" gutterBottom>Login</Typography>
         <form onSubmit={handleLogin}>
 
@@ -63,7 +84,7 @@ const Login: React.FC = () => {
           <Button type="submit" variant="contained" fullWidth>Login</Button>
         </form>
       </Paper>
-    </Container>
+    </Box>
   );
 };
 
