@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Paper, Typography, Button} from "@mui/material";
 import { api } from "../../api";
+import BasePaper from "../../components/StyledPaper";
 
 const StoreManagerDashboard: React.FC = () => {
 
@@ -12,14 +13,14 @@ const StoreManagerDashboard: React.FC = () => {
             </Typography>
 
             <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 3 }}>
-                <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+                <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
                     <Typography fontWeight="bold" mb={2}>Update Stock Details</Typography>
                     <Button variant="contained" >Open</Button>
-                </Paper>
-                <Paper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
+                </BasePaper>
+                <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
                     <Typography fontWeight="bold" mb={2}>Stock Alerts</Typography>
                     <Button variant="contained" >Open</Button>
-                </Paper>
+                </BasePaper>Base
             </Box>
 
         </Box>
