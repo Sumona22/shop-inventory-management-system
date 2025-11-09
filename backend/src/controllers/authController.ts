@@ -4,55 +4,99 @@ import User from "../models/User";
 import { hashPassword, matchPassword } from "../utils/hashPassword";
 import { generateToken } from "../utils/generateToken";
 
-// Register Business (Admin)
+/**
+ * ✅ REGISTER BUSINESS + ADMIN
+ */
 export const registerBusiness = async (req: Request, res: Response) => {
   try {
-    const { Business_Name, Business_Email, Primary_Phone_No, Password, Primary_Address } = req.body;
+    const { Business_Name, Business_Email, Address, Phone, Admin_Email, Admin_Password } = req.body;
 
-    const hashed = await hashPassword(Password);
+    // check if same email already used
+    const existingAdmin = await User.findOne({ Email: Admin_Email });
+    if (existingAdmin) {
+      return res.status(409).json({ message: "Admin email already exists" });
+    }
+
+    // hash password
+    const hashed = await hashPassword(Admin_Password);
+
+    // create admin user
+    const adminUser = await User.create({
+      Role: "Admin",
+      Email: Admin_Email,
+      Password: hashed,
+      isActive: true,
+    });
+
+    // create business record
     const business = await Business.create({
       Business_Name,
       Business_Email,
-      Primary_Phone_No,
-      Password: hashed,
-      Primary_Address,
+      Address,
+      Phone,
+      Admin_User_ID: adminUser._id,
     });
 
-    // Create Admin User
-    const admin = await User.create({
-      Role: "Admin",
+    // link business to admin
+    adminUser.Business_ID = business._id;
+    await adminUser.save();
+
+    // generate token
+    const token = generateToken(adminUser._id.toString(), adminUser.Role);
+
+    res.status(201).json({
+      message: "Business registered successfully",
       Business_ID: business._id,
-      Password: hashed,
+      Admin_ID: adminUser._id,
+      token,
     });
-
-    res.status(201).json({ Business_ID: business._id, Admin_ID: admin._id });
-  } catch (error) {
-    res.status(400).json({ message: "Business registration failed", error });
+  } catch (error: any) {
+    console.error("Register error:", error);
+    res.status(400).json({
+      message: "Business registration failed",
+      error: error.message,
+    });
   }
 };
 
-// Login
+/**
+ * ✅ LOGIN (Admin / StoreManager / StoreStaff / Cashier)
+ */
 export const login = async (req: Request, res: Response) => {
   try {
-    const { role, Business_ID, Branch_ID, Personal_ID, Password } = req.body;
+    const { Email, Password, Role } = req.body;
 
-    let user;
-    if (role === "Admin") {
-      user = await User.findOne({ Role: "Admin", Business_ID });
-    } else if (role === "StoreManager") {
-      user = await User.findOne({ Role: "StoreManager", Business_ID, Branch_ID });
-    } else {
-      user = await User.findOne({ Role: role, Branch_ID, Personal_ID });
+    console.log("🟢 Login Attempt:", { Email, Role });
+
+    // find user
+    const user = await User.findOne({ Email, Role });
+    if (!user) {
+      console.warn("⚠️ User not found for:", Email);
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user) return res.status(404).json({ message: "User not found" });
-
+    // check password
     const isMatch = await matchPassword(Password, user.Password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      console.warn("⚠️ Invalid password for:", Email);
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
+    // generate token
     const token = generateToken(user._id.toString(), user.Role);
-    res.json({ token, role: user.Role, id: user._id });
-  } catch (error) {
-    res.status(500).json({ message: "Login failed", error });
+
+    console.log("✅ Login success:", user.Role, user._id.toString());
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      role: user.Role,
+      userId: user._id,
+      Business_ID: user.Business_ID,
+      Branch_ID: user.Branch_ID,
+    });
+  } catch (error: any) {
+    console.error("❌ Login error:", error);
+    res.status(500).json({ message: "Login failed", error: error.message });
   }
 };

@@ -122,7 +122,7 @@ const Home = () => {
               },
             }}
           >
-            Signup
+            Register Your Business Now
           </Button>
         </motion.div>
       </Box>

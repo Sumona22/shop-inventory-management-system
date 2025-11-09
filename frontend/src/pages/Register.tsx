@@ -21,12 +21,14 @@ const Register: React.FC = () => {
     e.preventDefault();
     try {
       const res = await api.post("/auth/register-business", {
-        Business_Name: businessName,
-        Business_Email: email,
-        Primary_Phone_No: phone,
-        Password: password,
-        Primary_Address: address,
-      });
+  Business_Name: businessName,
+  Business_Email: email,
+  Address: address,
+  Phone: phone,
+  Admin_Email: adminEmail,
+  Admin_Password: password,
+});
+
 
       const id = res.data.Business_ID;
       setBusinessId(id);

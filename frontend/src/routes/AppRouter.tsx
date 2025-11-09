@@ -2,7 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-import AdminDashboard from "../pages/admin-dashboard/AdminDashboard";
+//import AdminDashboard from "../pages/admin-dashboard/AdminDashboard";
+import AdministratorDashboard from "../pages/admin-dashboard/AdministratorDashboard";
 import StoreManagerDashboard from "../pages/store-manager-dashboard/StoreManagerDashboard";
 import StoreStaffDashboard from "../pages/store-staff-dashboard/StoreStaffDashboard";
 import CashierDashboard from "../pages/cashier-dashboard/CashierDashboard";
@@ -37,7 +38,7 @@ const AppRouter = () => {
         path="/dashboard/admin"
         element={
           <ProtectedRoute role="Admin">
-            <AdminDashboard />
+            <AdministratorDashboard />
           </ProtectedRoute>
         }
       />
