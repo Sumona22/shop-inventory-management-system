@@ -12,6 +12,8 @@ import ManageBranch from "../pages/admin-dashboard/ManageBranch";
 import AddBranch from "../pages/admin-dashboard/AddBranch";
 import ViewBranch from "../pages/admin-dashboard/ViewBranch";
 import Register from "../pages/Register";
+import StoreStaffDashboard from "../pages/store-staff-dashboard/StoreStaffDashboard";
+import CashierDashboard from "../pages/cashier-dashboard/CashierDashboard";
 
 const ProtectedRoute = ({ children, role }: { children: JSX.Element; role: string }) => {
   const { token, role: userRole } = useAuth();
@@ -35,13 +37,23 @@ const AppRouter = () => {
           element={<ProtectedRoute role="Admin"><AdminDashboard /></ProtectedRoute>}
         />
         <Route
-          path="/dashboard/storeManager"
+          path="/dashboard/store-manager"
           element={<ProtectedRoute role="StoreManager"><StoreManagerDashboard /></ProtectedRoute>}
         />
-        <Route path="/branches" element={<BranchPage />}/>
-        <Route path="/branches/view" element={<ViewBranch />}/>
-        <Route path="/branches/manage" element={<ManageBranch />}/>
-        <Route path="/branches/manage/add" element={<AddBranch />}/>
+        <Route
+          path="/dashboard/storeManager"
+          element={<ProtectedRoute role="StoreStaff"><StoreStaffDashboard /></ProtectedRoute>}
+        />
+        <Route
+          path="/dashboard/storeManager"
+          element={<ProtectedRoute role="Cashier"><CashierDashboard /></ProtectedRoute>}
+        />
+
+        {/* AdminDashboard Routes */}
+        <Route path="/branches" element={<ProtectedRoute role="Admin"><BranchPage /></ProtectedRoute>}/>
+        <Route path="/branches/view" element={<ProtectedRoute role="Admin"><ViewBranch /></ProtectedRoute>}/>
+        <Route path="/branches/manage" element={<ProtectedRoute role="Admin"><ManageBranch /></ProtectedRoute>}/>
+        <Route path="/branches/manage/add" element={<ProtectedRoute role="Admin"><AddBranch /></ProtectedRoute>}/>
       </Routes>
     </Router>
   );
