@@ -9,7 +9,7 @@ const StoreManagerDashboard: React.FC = () => {
     return (
         <Box sx={{ minHeight: "100vh", background: "linear-gradient(to right, #e8f5e9, #c8e6c9)", p: 4 }}>
             <Typography variant="h4" fontWeight="bold" textAlign="center" mb={4}>
-                Store Manager Dashboard
+                Store Staff Dashboard
             </Typography>
 
             <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 3 }}>
@@ -20,7 +20,7 @@ const StoreManagerDashboard: React.FC = () => {
                 <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
                     <Typography fontWeight="bold" mb={2}>Stock Alerts</Typography>
                     <Button variant="contained" >Open</Button>
-                </BasePaper>Base
+                </BasePaper>
             </Box>
 
         </Box>

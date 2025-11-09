@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Box, Typography, Button, Modal, TextField, MenuItem } from "@mui/material";
-
 import { api } from "../../api";
 import BasePaper from "../../components/StyledPaper";
 
@@ -10,22 +9,36 @@ const StoreManagerDashboard: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-
-
-  const branchId = localStorage.getItem("branchId"); 
+  const branchId = localStorage.getItem("branchId");
+  const businessId = localStorage.getItem("businessId");
+  const token = localStorage.getItem("token");
 
   const createStaff = async () => {
     try {
-      await api.post("/users/staff-or-cashier", {
-        Role: role,
-        Branch_ID: branchId,
-        Email: email,
-        Password: password,
-      });
-      alert(`${role} created!`);
+      await api.post(
+        "/users/staff-or-cashier",
+        {
+          Role: role,
+          Email: email,
+          Password: password,
+          Business_ID: businessId,
+          Branch_ID: branchId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      alert(`${role} created successfully!`);
       setOpen(false);
-    } catch {
-      alert("Failed to create user");
+      setEmail("");
+      setPassword("");
+      setRole("StoreStaff");
+    } catch (err: any) {
+      console.error("❌ Staff/Cashier creation failed:", err.response?.data || err.message);
+      alert(`Failed to create user: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -42,32 +55,56 @@ const StoreManagerDashboard: React.FC = () => {
         </BasePaper>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>View & Manage Staff / Cashier Details</Typography>
-          <Button variant="contained" >Open</Button>
+          <Button variant="contained">Open</Button>
         </BasePaper>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>View Sales Record</Typography>
-          <Button variant="contained" >Open</Button>
+          <Button variant="contained">Open</Button>
         </BasePaper>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Communication Window</Typography>
-          <Button variant="contained" >Open</Button>
+          <Button variant="contained">Open</Button>
         </BasePaper>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Stock Alert Notification</Typography>
-          <Button variant="contained" >Open</Button>
+          <Button variant="contained">Open</Button>
         </BasePaper>
       </Box>
 
       <Modal open={open} onClose={() => setOpen(false)}>
         <Box sx={modalStyle}>
           <Typography variant="h6" mb={2}>Create Staff or Cashier</Typography>
-          <TextField select fullWidth label="Role" value={role} onChange={(e) => setRole(e.target.value)} sx={{ mb: 2 }}>
+
+          <TextField
+            select
+            fullWidth
+            label="Role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            sx={{ mb: 2 }}
+          >
             <MenuItem value="StoreStaff">Store Staff</MenuItem>
             <MenuItem value="Cashier">Cashier</MenuItem>
           </TextField>
-          <TextField fullWidth label="Email" value={email} onChange={(e) => setEmail(e.target.value)} sx={{ mb: 2 }} />
-          <TextField fullWidth label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} sx={{ mb: 2 }} />
-          <Button variant="contained" onClick={createStaff}>Submit</Button>
+
+          <TextField
+            fullWidth
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+
+          <Button variant="contained" fullWidth onClick={createStaff}>Submit</Button>
         </Box>
       </Modal>
     </Box>
