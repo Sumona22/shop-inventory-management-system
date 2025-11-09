@@ -5,7 +5,7 @@ import Login from "../pages/Login";
 import AdminDashboard from "../pages/admin-dashboard/AdminDashboard";
 import AdministratorDashboard from "../pages/admin-dashboard/AdministatorDashboard";
 import BranchPage from "../pages/admin-dashboard/BranchPage";
-import ManagerDashboard from "../pages/StoreManagerDashboard";
+import StoreManagerDashboard from "../pages/store-manager-dashboard/StoreManagerDashboard";
 import NavBar from "../components/NavBar";
 import { useAuth } from "../context/AuthContext";
 import ManageBranch from "../pages/admin-dashboard/ManageBranch";
@@ -32,11 +32,11 @@ const AppRouter = () => {
 
         <Route
           path="/dashboard/admin"
-          element={<ProtectedRoute role="Admin"><AdministratorDashboard /></ProtectedRoute>}
+          element={<ProtectedRoute role="Admin"><AdminDashboard /></ProtectedRoute>}
         />
         <Route
           path="/dashboard/storeManager"
-          element={<ProtectedRoute role="StoreManager"><ManagerDashboard /></ProtectedRoute>}
+          element={<ProtectedRoute role="StoreManager"><StoreManagerDashboard /></ProtectedRoute>}
         />
         <Route path="/branches" element={<BranchPage />}/>
         <Route path="/branches/view" element={<ViewBranch />}/>

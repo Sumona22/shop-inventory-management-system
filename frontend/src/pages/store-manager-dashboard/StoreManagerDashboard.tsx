@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Box, Paper, Typography, Button, Modal, TextField, MenuItem } from "@mui/material";
-import { api } from "../api";
+import { api } from "../../api";
 
-const ManagerDashboard: React.FC = () => {
+const StoreManagerDashboard: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [role, setRole] = useState("StoreStaff");
   const [email, setEmail] = useState("");
@@ -82,4 +82,4 @@ const modalStyle = {
   borderRadius: 2,
 };
 
-export default ManagerDashboard;
+export default StoreManagerDashboard;
