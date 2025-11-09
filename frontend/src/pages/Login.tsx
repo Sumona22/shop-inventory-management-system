@@ -27,7 +27,9 @@ const Login: React.FC = () => {
       login(res.data.role, res.data.token);
 
       if (res.data.role === "Admin") navigate("/dashboard/admin");
-      else if (res.data.role === "StoreManager") navigate("/dashboard/storeManager");
+      else if (res.data.role === "StoreManager") navigate("/dashboard/store-manager");
+      else if (res.data.role === "StoreStaff") navigate("/dashboard/store-staff");
+      else if (res.data.role === "Cashier") navigate("/dashboard/cashier");
       else navigate("/");
     } catch {
       alert("Login failed");
@@ -39,9 +41,9 @@ const Login: React.FC = () => {
       <Paper sx={{ p: 3, mt: 5 }}>
         <Typography variant="h4" gutterBottom>Login</Typography>
         <form onSubmit={handleLogin}>
-          {role !== "StoreStaff" && role !== "Cashier" && (
-            <TextField label="Business ID" fullWidth value={businessId} onChange={(e) => setBusinessId(e.target.value)} sx={{ mb: 2 }} />
-          )}
+
+          <TextField label="Business ID" fullWidth value={businessId} onChange={(e) => setBusinessId(e.target.value)} sx={{ mb: 2 }} />
+
           {(role === "StoreManager" || role === "StoreStaff" || role === "Cashier") && (
             <TextField label="Branch ID" fullWidth value={branchId} onChange={(e) => setBranchId(e.target.value)} sx={{ mb: 2 }} />
           )}
