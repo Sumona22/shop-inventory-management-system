@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Box,Paper,Typography,Button,Modal,TextField,} from "@mui/material";
+import { Box, Paper, Typography, Button, Modal, TextField, } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api";
 
@@ -108,11 +108,8 @@ const AdministratorDashboard: React.FC = () => {
               color="primary"
               size="small"
               onClick={() => {
-                if (func.path === "/branches") {
-                  setOpenManagerModal(true);
-                } else {
                   navigate(func.path);
-                }
+
               }}
             >
               OPEN

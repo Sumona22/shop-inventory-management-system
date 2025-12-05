@@ -4,9 +4,7 @@ import Business from "../models/Business";
 import User from "../models/User";
 import { hashPassword } from "../utils/hashPassword";
 
-/**
- * ✅ Create Branch + Store Manager (Admin only)
- */
+
 export const createBranchWithStoreManager = async (req: Request, res: Response) => {
   try {
     const { Business_ID, Branch_Name, Branch_Address, StoreManager_Email, StoreManager_Password } = req.body;

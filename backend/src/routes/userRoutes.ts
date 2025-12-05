@@ -7,7 +7,7 @@ import {
 
 const router = express.Router();
 
-// ✅ Admin: Create branch + store manager
+//  Admin: Create branch + store manager
 router.post(
   "/branch-with-manager",
   protect,
@@ -15,7 +15,7 @@ router.post(
   createBranchWithStoreManager
 );
 
-// ✅ Store Manager: Create store staff or cashier
+// Store Manager: Create store staff or cashier
 router.post(
   "/staff-or-cashier",
   protect,

@@ -4,6 +4,7 @@ import { api } from "../../api";
 import BasePaper from "../../components/StyledPaper";
 
 
+
 const AdminDashboard: React.FC = () => {
   const [openBranch, setOpenBranch] = useState(false);
   const [openManager, setOpenManager] = useState(false);
@@ -11,6 +12,8 @@ const AdminDashboard: React.FC = () => {
   const [branchAddress, setBranchAddress] = useState("");
   const [managerBranchId, setManagerBranchId] = useState("");
   const [managerPassword, setManagerPassword] = useState("");
+
+  
 
   const businessId = localStorage.getItem("businessId"); // store this after login/register
 
@@ -51,7 +54,7 @@ const AdminDashboard: React.FC = () => {
       <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 3 }}>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Add / Manage Branch</Typography>
-          <Button variant="contained" onClick={() => setOpenBranch(true)}>Open</Button>
+          <Button variant="contained" href="/branches">Open</Button>
         </BasePaper>
         <BasePaper sx={{ p: 3, width: 220, textAlign: "center", borderRadius: 3 }}>
           <Typography fontWeight="bold" mb={2}>Add Store Manager</Typography>
