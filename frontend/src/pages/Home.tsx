@@ -9,7 +9,7 @@ const Home = () => {
   const role = localStorage.getItem("role");
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-
+  
   useEffect(() => {
     if (role === "Admin") navigate("/dashboard/admin");
     else if (role === "StoreManager") navigate("/dashboard/storeManager");
