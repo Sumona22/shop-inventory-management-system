@@ -12,6 +12,9 @@ import ManageBranch from "../pages/admin-dashboard/ManageBranch";
 import AddBranch from "../pages/admin-dashboard/AddBranch";
 import ViewBranch from "../pages/admin-dashboard/ViewBranch";
 import { useAuth } from "../context/AuthContext";
+import SupplierPage from "../pages/admin-dashboard/SupplierPage";
+import SupplierDetails from "../pages/admin-dashboard/SupplierDetails";
+import OrderDetails from "../pages/admin-dashboard/OrderDetails";
 
 const ProtectedRoute = ({
   children,
@@ -99,6 +102,30 @@ const AppRouter = () => {
             <AddBranch />
           </ProtectedRoute>
         }
+      />
+      <Route
+      path="/supplier-page"
+      element ={
+        <ProtectedRoute role="Admin">
+          <SupplierPage/>
+        </ProtectedRoute>
+      }
+      />
+      <Route
+      path="/supplier-details"
+      element={
+        <ProtectedRoute role="Admin">
+          <SupplierDetails/>
+        </ProtectedRoute>
+      }
+      />
+      <Route
+      path="/order-details"
+      element={
+        <ProtectedRoute role="Admin">
+          <OrderDetails/>
+        </ProtectedRoute>
+      }
       />
     </Routes>
   );

@@ -22,7 +22,7 @@ const AdministratorDashboard: React.FC = () => {
     { name: "Add / Delete Product", path: "/products" },
     { name: "Stock Alerts", path: "/alerts" },
     { name: "Manage Communication with Managers", path: "/communication" },
-    { name: "Place Order to Suppliers", path: "/orders" },
+    { name: "Place Order to Suppliers", path: "/supplier-page" },
     { name: "Update Product Details", path: "/products/update" },
     { name: "View Sales Records", path: "/sales" },
     { name: "Process Payment", path: "/payment" },
