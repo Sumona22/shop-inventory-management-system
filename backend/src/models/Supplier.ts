@@ -66,9 +66,7 @@ const supplierSchema = new Schema<ISupplier>(
     { timestamps: true }
 );
 
-/**
- * Prevent duplicate supplier email per business
- */
+/* Prevent duplicate supplier email per business */
 supplierSchema.index(
     { Supplier_Email: 1, Business_ID: 1 },
     { unique: true }
