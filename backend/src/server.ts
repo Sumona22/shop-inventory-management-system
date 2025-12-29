@@ -21,9 +21,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", allProductRoutes);
 
-console.log("✅ Routes Mounted:");
-console.log("- /api/auth/*");
-console.log("- /api/users/*");
+///console.log("✅ Routes Mounted:");
+//console.log("- /api/auth/*");
+//console.log("- /api/users/*");
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
