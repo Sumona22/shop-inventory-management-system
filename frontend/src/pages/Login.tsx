@@ -26,18 +26,23 @@ const Login: React.FC = () => {
   const theme = useTheme();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await api.post("/auth/login", {
-        Email: email,
-        Password: password,
-        Role: role,
-      });
-      login(res.data.role, res.data.token);
-      navigate("/dashboard/admin");
-    } catch {
-      alert("Login failed. Please check your credentials.");
-    }
+  e.preventDefault();
+  try {
+    const res = await api.post("/auth/login", { Email: email, Password: password, Role: role });
+
+    login(res.data.role, res.data.token);
+
+    if (res.data.Business_ID) localStorage.setItem("businessId", res.data.Business_ID);
+    if (res.data.Branch_ID) localStorage.setItem("branchId", res.data.Branch_ID);
+    
+    if (res.data.role === "Admin") navigate("/dashboard/admin");
+    else if (res.data.role === "StoreManager") navigate("/dashboard/store-manager");
+    else if (res.data.role === "StoreStaff") navigate("/dashboard/store-staff");
+    else if (res.data.role === "Cashier") navigate("/dashboard/cashier");
+    else navigate("/");
+  } catch {
+    alert("Login failed. Please check your credentials.");
+  }
   };
 
   return (
