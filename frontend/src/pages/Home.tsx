@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button, Box, Typography, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
 import logo from "/inventra-logo.jpg";
+import bgImage from "./home_bgblk.png";
 
 const Home = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
-  
+
   useEffect(() => {
     if (role === "Admin") navigate("/dashboard/admin");
     else if (role === "StoreManager") navigate("/dashboard/storeManager");
@@ -26,15 +27,36 @@ const Home = () => {
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        overflow: "hidden",
         px: 2,
-        transition: "background 0.6s ease",
-        background: isDark
-          ? "radial-gradient(circle at center, #1e1e1e 0%, #121212 100%)"
-          : "radial-gradient(circle at center, #e3f2fd 0%, #bbdefb 100%)",
+        position: "relative",
+        overflow: "hidden",
+
+        backgroundImage: isDark
+          ? `
+            linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
+            url(${bgImage})
+          `
+          : `
+            linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)),
+            url(${bgImage})
+          `,
+
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+
+        filter: isDark
+          ? "none"
+          : "brightness(1.12) contrast(1.2) saturate(1.15)",
+
+        transition: "all 0.6s ease",
+
+        boxShadow: isDark
+          ? "inset 0 0 120px rgba(0,0,0,0.7)"
+          : "inset 0 0 90px rgba(0,0,0,0.35)",
       }}
     >
-      {/* Animated Logo */}
+      {/* 🔵 Animated Logo */}
       <motion.div
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -50,13 +72,13 @@ const Home = () => {
             ? "linear-gradient(135deg, #7e57c2, #512da8)"
             : "linear-gradient(135deg, #7e57c2, #2196f3)",
           display: "inline-block",
-          boxShadow: "0px 5px 25px rgba(33, 150, 243, 0.3)",
+          boxShadow: "0px 5px 25px rgba(33, 150, 243, 0.4)",
           marginBottom: "30px",
         }}
       >
         <img
           src={logo}
-          alt="Shop Inventory Logo"
+          alt="Inventra Logo"
           style={{
             width: "180px",
             height: "180px",
@@ -67,7 +89,7 @@ const Home = () => {
         />
       </motion.div>
 
-      {/* Welcome Text */}
+      {/* 🔤 Welcome Text */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -77,16 +99,81 @@ const Home = () => {
           variant="h3"
           fontWeight="bold"
           gutterBottom
-          color={isDark ? "#bbdefb" : "text.primary"}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
         >
-          Welcome to <span style={{ color: "#1976d2" }}>Inventra 🛒</span>
+          {/* 🌾 Beige Text */}
+          <span
+            style={{
+              color: "#E8DDC8",
+              textShadow: "0 1px 4px rgba(0,0,0,0.45)",
+            }}
+          >
+            Welcome to
+          </span>
+
+          {/* 🌈 Gradient Brand */}
+          <span
+            style={{
+              background:
+                "linear-gradient(135deg, #64ffda, #82b1ff, #b388ff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textShadow: "0 4px 14px rgba(0,0,0,0.7)",
+            }}
+          >
+            Inventra
+          </span>
+
+          {/* 🛒 Animated Cart */}
+          <motion.span
+            animate={{ x: [0, 8, 0] }}
+            transition={{
+              duration: 1.6,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{ display: "inline-block" }}
+          >
+            🛒
+          </motion.span>
         </Typography>
-        <Typography variant="h6" color="text.secondary" mb={4}>
-          Manage products, suppliers, and stores with ease.
-        </Typography>
+
+        {/* 🌬️ Subtitle with Shadowy Background */}
+        <Box
+          sx={{
+            display: "inline-block",
+            px: 3,
+            py: 1.2,
+            mt: 1,
+            mb: 4,
+            borderRadius: "14px",
+            background: "rgba(0, 0, 0, 0.45)",
+            backdropFilter: "blur(6px)",
+            boxShadow:
+              "0 8px 25px rgba(0,0,0,0.45), inset 0 0 12px rgba(255,255,255,0.05)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              background: "linear-gradient(90deg, #69f0ae, #40c4ff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              letterSpacing: "0.4px",
+              textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+            }}
+          >
+            Manage products, suppliers, and stores with ease.
+          </Typography>
+        </Box>
       </motion.div>
 
-      {/* Buttons */}
+      {/* 🔘 Buttons */}
       <Box display="flex" gap={2}>
         <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
           <Button
@@ -99,7 +186,7 @@ const Home = () => {
               py: 1.2,
               fontWeight: "bold",
               "&:hover": {
-                boxShadow: "0px 0px 15px rgba(33, 150, 243, 0.6)",
+                boxShadow: "0px 0px 20px rgba(33, 150, 243, 0.7)",
               },
             }}
           >
@@ -118,7 +205,7 @@ const Home = () => {
               py: 1.2,
               fontWeight: "bold",
               "&:hover": {
-                boxShadow: "0px 0px 15px rgba(76, 175, 80, 0.6)",
+                boxShadow: "0px 0px 20px rgba(76, 175, 80, 0.7)",
               },
             }}
           >
