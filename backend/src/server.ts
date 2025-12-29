@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import allProductRoutes from "./routes/product-routes";
 
 dotenv.config();
 connectDB();
@@ -18,6 +19,7 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", allProductRoutes);
 
 console.log("✅ Routes Mounted:");
 console.log("- /api/auth/*");

@@ -72,12 +72,12 @@ const BranchPage: React.FC = () => {
 
   useEffect(() => {
     const dummyBranches = [
-      { id: 1, name: "ABC Store Bansdroni" },
-      { id: 2, name: "ABC Store Salt Lake Sector V" },
-      { id: 3, name: "ABC Store Howrah" },
-      { id: 4, name: "ABC Store New Town Plaza" },
-      { id: 5, name: "ABC Store Sealdah" },
-      { id: 6, name: "ABC Store Garia" },
+      { id: 1, name: "ABC Store Bansdroni", email: "abcbansdroni@gmail.com" },
+      { id: 2, name: "ABC Store Salt Lake Sector V", email: "abcsaltlake@gmail.com" },
+      { id: 3, name: "ABC Store Howrah", email: "abchowrah@gmail.com" },
+      { id: 4, name: "ABC Store New Town Plaza", email: "abcnewtown@gmail.com" },
+      { id: 5, name: "ABC Store Sealdah", email: "abcsealdah@gmail.com" },
+      { id: 6, name: "ABC Store Garia", email: "abcgaria@gmail.com" },
     ];
 
     setRows(dummyBranches);
@@ -173,14 +173,47 @@ const BranchPage: React.FC = () => {
       </Grid>
 
       {/* Table */}
-      <Paper style={{ marginTop: "20px" }}>
+      <Paper sx={{
+        width: "100%",
+        overflow: "hidden",
+        mx: "auto",
+        maxWidth: "1200px",// keeps table centered and not full screen
+        marginTop: 3
+      }}>
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
-                <TableCell><strong>ID</strong></TableCell>
-                <TableCell><strong>Branch Name</strong></TableCell>
-                <TableCell align="center"><strong>Actions</strong></TableCell>
+              <TableRow
+                sx={{
+                  backgroundColor: "#3ab8f2",
+                }}>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                  }}>
+                  <strong>ID</strong>
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                  }}>
+                  <strong>Branch Name</strong>
+                </TableCell>
+                <TableCell sx={{
+                  color: "white",
+                  fontWeight: "bold",
+                }}>
+                  <strong>Email</strong>
+                </TableCell>
+                <TableCell align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: "bold",
+                  }}>
+                  <strong>Actions</strong>
+                </TableCell>
               </TableRow>
             </TableHead>
 
@@ -191,20 +224,42 @@ const BranchPage: React.FC = () => {
                   <TableRow key={row.id}>
                     <TableCell>{row.id}</TableCell>
                     <TableCell>{row.name}</TableCell>
+                    <TableCell>{row.email}</TableCell>
                     <TableCell align="center">
-                      <IconButton onClick={() => navigate(`/branches/view/${row.id}`)}>
+                      <IconButton
+                        sx={{
+                          background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+                          color: "white",
+                          mx: 1,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #2563eb, #0891b2)",
+                          },
+                        }}
+                      >
                         <VisibilityIcon />
                       </IconButton>
 
-                      <IconButton onClick={() => navigate(`/branches/edit/${row.id}`)}>
+                      <IconButton
+                        sx={{
+                          background: "linear-gradient(135deg, #3b82f6, #06b6d4)",
+                          color: "white",
+                          mx: 1,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #2563eb, #0891b2)",
+                          },
+                        }}
+                      >
                         <EditIcon />
                       </IconButton>
 
                       <IconButton
-                        color="error"
-                        onClick={() => {
-                          setDeleteId(row.id);
-                          setDialogOpen(true);
+                        sx={{
+                          background: "linear-gradient(135deg, #ef4444, #f97316)",
+                          color: "white",
+                          mx: 1,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #dc2626, #ea580c)",
+                          },
                         }}
                       >
                         <DeleteIcon />
