@@ -57,9 +57,7 @@ export const createBranchWithStoreManager = async (req: Request, res: Response) 
   }
 };
 
-/**
- * ✅ Create Store Staff or Cashier (StoreManager only)
- */
+/* Create Store Staff or Cashier (StoreManager only) */
 export const createStaffOrCashier = async (req: Request, res: Response) => {
   try {
     const { Role, Business_ID, Branch_ID, Email, Password } = req.body;
