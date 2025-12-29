@@ -18,7 +18,7 @@ export const addSupplier = async (req: Request, res: Response) => {
             Business_ID
         } = req.body;
 
-        /* 🔐 Auth check */
+        /* Auth check */
         const requester = await User.findById((req as any).user.id);
 
         if (!requester || requester.Role !== "Admin") {
@@ -27,14 +27,14 @@ export const addSupplier = async (req: Request, res: Response) => {
             });
         }
 
-        /* 🔐 Business ownership check */
+        /* Business ownership check */
         if (requester.Business_ID?.toString() !== Business_ID) {
             return res.status(403).json({
                 message: "Admin can only add suppliers for own business"
             });
         }
 
-        /* 🏢 Business existence check */
+        /* Business existence check */
         const business = await Business.findById(Business_ID);
         if (!business) {
             return res.status(404).json({
@@ -42,7 +42,7 @@ export const addSupplier = async (req: Request, res: Response) => {
             });
         }
 
-        /* 🔁 Duplicate supplier check (business scoped) */
+        /* Duplicate supplier check (business scoped) */
         const existingSupplier = await Supplier.findOne({
             Supplier_Email,
             Business_ID
@@ -54,7 +54,7 @@ export const addSupplier = async (req: Request, res: Response) => {
             });
         }
 
-        /* ✅ Create supplier */
+        /* Create supplier */
         const supplier = await Supplier.create({
             Supplier_Name,
             Supplier_Email,

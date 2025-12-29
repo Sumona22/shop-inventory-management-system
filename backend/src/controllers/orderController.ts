@@ -16,7 +16,7 @@ export const createOrder = async (req: Request, res: Response) => {
             Notes
         } = req.body;
 
-        /* 🔐 Auth check */
+        /* Auth check */
         const requester = await User.findById((req as any).user.id);
 
         if (!requester || requester.Role !== "Admin") {
@@ -25,20 +25,20 @@ export const createOrder = async (req: Request, res: Response) => {
             });
         }
 
-        /* 🔐 Business ownership check */
+        /* Business ownership check */
         if (requester.Business_ID?.toString() !== Business_ID) {
             return res.status(403).json({
                 message: "Admin can only create orders for own business"
             });
         }
 
-        /* 🏢 Business validation */
+        /* Business validation */
         const business = await Business.findById(Business_ID);
         if (!business) {
             return res.status(404).json({ message: "Business not found" });
         }
 
-        /* 🧾 Supplier validation */
+        /* Supplier validation */
         const supplier = await Supplier.findOne({
             _id: Supplier_ID,
             Business_ID,
@@ -51,7 +51,7 @@ export const createOrder = async (req: Request, res: Response) => {
             });
         }
 
-        /* 🧾 Create Order */
+        /* Create Order */
         const order = await Order.create({
             Order_Number,
             Admin_User_ID: requester._id,
