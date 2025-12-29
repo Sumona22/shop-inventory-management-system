@@ -89,15 +89,12 @@ const SupplierDetails: React.FC = () => {
         <TableContainer sx={{ maxHeight: 440 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
-              <TableRow
-                sx={{
-
-                }}>
+              <TableRow>
                 {columns.map((column) => (
                   <TableCell
                     key={column.id}
                     align={column.align}
-                    style={{
+                    sx={{
                       color: "white",
                       fontWeight: "bold",
                       backgroundColor: "#3ab8f2",
