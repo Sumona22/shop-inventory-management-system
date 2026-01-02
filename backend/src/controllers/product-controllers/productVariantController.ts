@@ -19,8 +19,7 @@ export const createProductVariant = async (req: Request, res: Response) => {
       Pack_Size,
       Unit,
       Attributes,
-      requiresBatchTracking,
-      requiresItemTracking,
+      Tracking_Type,
     } = req.body;
 
     const product = await Product.findOne({
@@ -53,8 +52,7 @@ export const createProductVariant = async (req: Request, res: Response) => {
       Pack_Size,
       Unit,
       Attributes,
-      requiresBatchTracking,
-      requiresItemTracking,
+      Tracking_Type
     });
 
     res.status(201).json({
