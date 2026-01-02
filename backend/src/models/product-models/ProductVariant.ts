@@ -57,7 +57,7 @@ const productVariantSchema = new Schema<IProductVariant>({
     },
     Price: {
         type: Number,
-        requiered: true,
+        required: true,
     },
 
     Attributes: {
