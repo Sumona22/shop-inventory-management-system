@@ -57,7 +57,7 @@ export const getProducts = async (req: Request, res: Response) => {
 
     const filter: any = { Business_ID: requester.Business_ID };
 
-    if (req.query.categotyId) {
+    if (req.query.categoryId) {
       filter.Category_ID = req.query.categoryId;
     }
 
