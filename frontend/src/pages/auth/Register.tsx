@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import type { SlideProps } from "@mui/material/Slide";
 import { motion } from "framer-motion";
-import { api } from "../api";
-import warehouseImg from "./login_bg.jpg";
+import { api } from "../../api/api";
+import warehouseImg from "../../assets/login_bg.png"; //change required
 
 const Register: React.FC = () => {
   const [businessName, setBusinessName] = useState("");

@@ -12,9 +12,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { api } from "../api";
-import { useAuth } from "../context/AuthContext";
-import warehouseImg from "./login_bg.jpg";
+import { api } from "../../api/api";
+import { useAuth } from "../../context/AuthContext";
+import warehouseImg from "../../assets/login_bg.png"; //change required
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
