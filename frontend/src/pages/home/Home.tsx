@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Box, Typography, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
-import logo from "/inventra-logo.jpg";
-import bgImage from "./home_bgblk.png";
+import logo from "../../assets/inventra-logo.jpg";
+import bgImage from "../../assets/home_bg1.jpg"; // change required
 
 const Home = () => {
   const navigate = useNavigate();
