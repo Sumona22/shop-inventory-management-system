@@ -1,5 +1,4 @@
 import {
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -9,9 +8,6 @@ import {
   TablePagination,
   TableRow,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import type { Branch } from "../types/branch";
 
 interface Props {
@@ -33,42 +29,64 @@ const BranchTable: React.FC<Props> = ({
     <Paper sx={{ mt: 3 }}>
       <TableContainer>
         <Table>
+          {/* ================= TABLE HEADER ================= */}
           <TableHead>
             <TableRow sx={{ bgcolor: "primary.main" }}>
-              {["ID", "Branch Name", "Email", "Actions"].map((h) => (
-                <TableCell key={h} sx={{ color: "primary.contrastText" }}>
-                  <strong>{h}</strong>
-                </TableCell>
-              ))}
+              <TableCell sx={{ color: "primary.contrastText" }}>
+                <strong>#</strong>
+              </TableCell>
+              <TableCell sx={{ color: "primary.contrastText" }}>
+                <strong>Branch Name</strong>
+              </TableCell>
+              <TableCell sx={{ color: "primary.contrastText" }}>
+                <strong>Address</strong>
+              </TableCell>
+              <TableCell sx={{ color: "primary.contrastText" }}>
+                <strong>Manager Email</strong>
+              </TableCell>
             </TableRow>
           </TableHead>
 
+          {/* ================= TABLE BODY ================= */}
           <TableBody>
             {rows
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell align="center">
-                    <IconButton color="primary"><VisibilityIcon /></IconButton>
-                    <IconButton color="info"><EditIcon /></IconButton>
-                    <IconButton color="error"><DeleteIcon /></IconButton>
+              .map((row, index) => (
+                <TableRow key={`${row.name}-${index}`}>
+                  {/* Serial Number */}
+                  <TableCell>
+                    {page * rowsPerPage + index + 1}
                   </TableCell>
+
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.address}</TableCell>
+                  <TableCell>{row.managerEmail}</TableCell>
                 </TableRow>
               ))}
+
+            {/* Empty state */}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  No branches found
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
 
+      {/* ================= PAGINATION ================= */}
       <TablePagination
         component="div"
         count={rows.length}
         page={page}
         rowsPerPage={rowsPerPage}
         onPageChange={(_, p) => onPageChange(p)}
-        onRowsPerPageChange={(e) => onRowsPerPageChange(+e.target.value)}
+        onRowsPerPageChange={(e) =>
+          onRowsPerPageChange(parseInt(e.target.value, 10))
+        }
+        rowsPerPageOptions={[5, 10, 25]}
       />
     </Paper>
   );

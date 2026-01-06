@@ -4,7 +4,7 @@ import Business from "../models/Business";
 import User from "../models/User";
 import { hashPassword } from "../utils/hashPassword";
 
-
+/* Create Branch with Store Manager (Admin only) */
 export const createBranchWithStoreManager = async (req: Request, res: Response) => {
   try {
     const { Business_ID, Branch_Name, Branch_Address, StoreManager_Email, StoreManager_Password } = req.body;
@@ -40,7 +40,7 @@ export const createBranchWithStoreManager = async (req: Request, res: Response) 
       StoreManager_User_ID: managerUser._id,
     });
 
-    managerUser.Branch_ID = branch._id;
+    managerUser.Branch_ID = branch._id as any;
     await managerUser.save();
 
     res.status(201).json({
@@ -103,3 +103,31 @@ export const createStaffOrCashier = async (req: Request, res: Response) => {
     });
   }
 };
+
+/* Get Store Staff & Cashiers of current branch (StoreManager only) */
+export const getStaffByBranch = async (req: Request, res: Response) => {
+  try {
+    const requester = await User.findById((req as any).user.id);
+
+    if (!requester || requester.Role !== "StoreManager") {
+      return res.status(403).json({ message: "Only Store Manager can view staff" });
+    }
+
+    const staff = await User.find({
+      Branch_ID: requester.Branch_ID,
+      Role: { $in: ["StoreStaff", "Cashier"] },
+      isActive: true,
+    })
+      .select("Email Role createdAt")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(staff);
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to fetch staff",
+      error: err.message,
+    });
+  }
+};
+
