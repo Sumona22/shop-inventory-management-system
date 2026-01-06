@@ -20,12 +20,15 @@ export interface IOrderRequestItem {
 export interface IOrderRequest extends Document {
   Business_ID: mongoose.Types.ObjectId;   
   Branch_ID: mongoose.Types.ObjectId;
-  Store_Manager_ID?: mongoose.Types.ObjectId;
+  Store_Manager_ID: mongoose.Types.ObjectId;
+  
   Order_Request_Number:String;
   Expected_Receive_Date: Date;
   Special_Instruction?: string;
+  
   Admin_Response_Message?:String;
   Admin_Responded_By?:mongoose.Types.ObjectId;
+  
   Status: OrderRequestStatus;
   Items: IOrderRequestItem[];
 
@@ -63,7 +66,7 @@ const OrderRequestSchema = new Schema<IOrderRequest>(
     Store_Manager_ID: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      // required: true
+      required: true
     },
 
     Branch_ID: {
@@ -128,7 +131,7 @@ OrderRequestSchema.index({ Branch_ID: 1, Status: 1 });
 OrderRequestSchema.index({ Store_Manager_ID: 1 });
 
 // Fast search by order number
-OrderRequestSchema.index({ Order_Request_Number: 1 });
+// OrderRequestSchema.index({ Order_Request_Number: 1 });
 
 export default mongoose.model<IOrderRequest>(
   "OrderRequest",

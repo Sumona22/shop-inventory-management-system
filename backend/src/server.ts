@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import allProductRoutes from "./routes/product-routes";
 import orderRequestRoute from "./routes/orderRequestRoute";
+import notificationRoute from "./routes/notificationRoute";
 
 
 
@@ -24,11 +25,9 @@ app.use(cors({
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api", allProductRoutes);
-app.use("/api",orderRequestRoute);
+app.use("/api/order-requests",orderRequestRoute);
+app.use("/api/notifications",notificationRoute);
 
-///console.log("✅ Routes Mounted:");
-//console.log("- /api/auth/*");
-//console.log("- /api/users/*");
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
