@@ -1,42 +1,39 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import Home from "../pages/Home";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-//import AdminDashboard from "../pages/admin-dashboard/AdminDashboard";
-import AdministratorDashboard from "../pages/admin-dashboard/AdministratorDashboard";
-import StoreManagerDashboard from "../pages/store-manager-dashboard/StoreManagerDashboard";
-import StoreStaffDashboard from "../pages/store-staff-dashboard/StoreStaffDashboard";
-import CashierDashboard from "../pages/cashier-dashboard/CashierDashboard";
-import BranchPage from "../pages/admin-dashboard/BranchPage";
-import ManageBranch from "../pages/admin-dashboard/ManageBranch";
-import AddBranch from "../pages/admin-dashboard/AddBranch";
-import ViewBranch from "../pages/admin-dashboard/ViewBranch";
-import { useAuth } from "../context/AuthContext";
-import SupplierPage from "../pages/admin-dashboard/SupplierPage";
-import SupplierDetails from "../pages/admin-dashboard/SupplierDetails";
-import OrderDetails from "../pages/admin-dashboard/OrderDetails";
+import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 
-const ProtectedRoute = ({
-  children,
-  role,
-}: {
-  children: JSX.Element;
-  role: string;
-}) => {
-  const { token, role: userRole } = useAuth();
-  if (!token || userRole !== role) {
-    return <Navigate to="/login" />;
-  }
-  return children;
-};
+/* Public Pages */
+import Home from "../pages/home/Home";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
 
+/* Dashboards */
+import AdministratorDashboard from "../pages/admin/AdministratorDashboard";
+import StoreManagerDashboard from "../pages/store-manager/StoreManagerDashboard";
+import StoreStaffDashboard from "../pages/store-staff/StoreStaffDashboard";
+import CashierDashboard from "../pages/cashier/CashierDashboard";
+
+/* Branch Pages */
+import BranchPage from "../pages/admin/branches/BranchPage";
+//import ViewBranch from "../pages/branches/ViewBranch";
+//import ManageBranch from "../pages/branches/ManageBranch";
+//import AddBranch from "../pages/branches/AddBranch";
+
+/* Supplier Pages */
+//import SupplierPage from "../pages/admin/suppliers/SupplierPage";
+//import SupplierDetails from "../pages/admin/suppliers/SupplierDetails";
+//import OrderDetails from "../pages/admin/suppliers/OrderDetails";
+
+
+/* ---------- App Router ---------- */
 const AppRouter = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
+      {/* Dashboards */}
       <Route
         path="/dashboard/admin"
         element={
@@ -45,6 +42,7 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/dashboard/store-manager"
         element={
@@ -53,6 +51,7 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/dashboard/store-staff"
         element={
@@ -61,6 +60,7 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/dashboard/cashier"
         element={
@@ -70,7 +70,7 @@ const AppRouter = () => {
         }
       />
 
-      {/* Admin Routes */}
+      {/* ---------- Admin : Branch Management ---------- */}
       <Route
         path="/branches"
         element={
@@ -79,54 +79,7 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/branches/view"
-        element={
-          <ProtectedRoute role="Admin">
-            <ViewBranch />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/branches/manage"
-        element={
-          <ProtectedRoute role="Admin">
-            <ManageBranch />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/branches/manage/add"
-        element={
-          <ProtectedRoute role="Admin">
-            <AddBranch />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-      path="/supplier-page"
-      element ={
-        <ProtectedRoute role="Admin">
-          <SupplierPage/>
-        </ProtectedRoute>
-      }
-      />
-      <Route
-      path="/supplier-details"
-      element={
-        <ProtectedRoute role="Admin">
-          <SupplierDetails/>
-        </ProtectedRoute>
-      }
-      />
-      <Route
-      path="/order-details"
-      element={
-        <ProtectedRoute role="Admin">
-          <OrderDetails/>
-        </ProtectedRoute>
-      }
-      />
+
     </Routes>
   );
 };
