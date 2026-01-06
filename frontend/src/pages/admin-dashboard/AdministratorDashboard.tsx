@@ -98,7 +98,7 @@ const AdministratorDashboard: React.FC = () => {
       </Box>
 
       {/* ============ MAIN CONTENT ============ */}
-<Box
+      <Box
         sx={{
           flex: 1,
           background: "linear-gradient(135deg, #e0f2fe, #f8fafc)",

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import User from "../../models/User";
 import OrderRequest from "../../models/OrderRequest";
 import { OrderRequestStatus } from "../../models/OrderRequest";
+import { createNotification } from "../../services/notificationService";
+import { NotificationType } from "../../models/Notification";
 
 /* =====================================
    ADMIN – GET ALL ORDER REQUESTS
@@ -51,16 +53,27 @@ export const modifyOrderRequest = async (req: Request, res: Response) => {
     );
 
     if (updatedItem) {
-      item.quantity = updatedItem.quantity;
+      item.Admin_Modified_Quantity = updatedItem.Admin_Modified_Quantity;
     }
   });
 
     order.Status = OrderRequestStatus.MODIFIED_BY_ADMIN;
     order.Admin_Response_Message = Admin_Response_Message;
-    order.Admin_Responded_By = req.user._id;
+    order.Admin_Responded_By = (req as any).user._id;
 
     await order.save();
 
+    await createNotification({
+      userId: String(order.Store_Manager_ID),
+      senderId: String((req as any).user._id),
+      title: "Order Modified",
+      message: "Admin modified quantities in your order request",
+      type: NotificationType.ORDER_MODIFIED,
+      orderRequestId: String(order._id),
+      meta: { modifiedItems: Items }
+    });
+
+    console.log("STORE MANAGER NOTIFICATION CREATED");
     res.json({
       message: "Order modified successfully",
       data: order
@@ -84,7 +97,7 @@ export const markWaitingForAvailability = async (req: Request, res: Response) =>
       {
         Status: OrderRequestStatus.WAITING_FOR_AVAILABILITY,
         Admin_Response_Message: message,
-        Admin_Responded_By: req.user._id
+        Admin_Responded_By: (req as any).user._id
       },
       { new: true }
     );
@@ -92,6 +105,18 @@ export const markWaitingForAvailability = async (req: Request, res: Response) =>
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
+
+    await createNotification({
+      userId: String(order.Store_Manager_ID),
+      senderId: String((req as any).user._id),
+      title: "Stock Not Available",
+      message: "Some items are currently not available. Please wait.",
+      type: NotificationType.ORDER_MODIFIED,
+      orderRequestId: String(order._id)
+    });
+
+    console.log("STORE MANAGER NOTIFICATION CREATED");
+
 
     res.json({
       message: "Marked as waiting for availability",
@@ -112,7 +137,7 @@ export const approveOrderRequest = async (req: Request, res: Response) => {
       req.params.id,
       {
         Status: OrderRequestStatus.APPROVED,
-        Admin_Responded_By: req.user._id
+        Admin_Responded_By: (req as any).user._id
       },
       { new: true }
     );
@@ -120,6 +145,18 @@ export const approveOrderRequest = async (req: Request, res: Response) => {
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
+
+    await createNotification({
+      userId: String(order.Store_Manager_ID),
+      senderId: String((req as any).user._id),
+      title: "Order Approved",
+      message: "Your order request has been approved by admin",
+      type: NotificationType.ORDER_APPROVED,
+      orderRequestId: String(order._id)
+    });
+
+    console.log("STORE MANAGER NOTIFICATION CREATED");
+
 
     res.json({
       message: "Order approved successfully",
@@ -143,7 +180,7 @@ export const rejectOrderRequest = async (req: Request, res: Response) => {
       {
         Status: OrderRequestStatus.REJECTED,
         Admin_Response_Message: message,
-        Admin_Responded_By: req.user._id
+        Admin_Responded_By: (req as any).user._id
       },
       { new: true }
     );
@@ -151,6 +188,18 @@ export const rejectOrderRequest = async (req: Request, res: Response) => {
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
+
+    await createNotification({
+      userId: String(order.Store_Manager_ID),
+      senderId: String((req as any).user._id),
+      title: "Order Rejected",
+      message: "Your order request was rejected by admin",
+      type: NotificationType.ORDER_REJECTED,
+      orderRequestId: String(order._id)
+    });
+
+    console.log("STORE MANAGER NOTIFICATION CREATED");
+
 
     res.json({
       message: "Order rejected successfully",
