@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Notification from "../models/Notification";
-
+import mongoose from "mongoose";
 /* =====================================
    GET MY NOTIFICATIONS
 ===================================== */
@@ -8,10 +8,12 @@ export const getMyNotifications = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
 
+    const userId = user._id || user.id;
+
     const notifications = await Notification.find({
-      User_ID: user.id
-    })
-      .sort({ createdAt: -1 });
+      User_ID: new mongoose.Types.ObjectId(userId)
+    }).sort({ createdAt: -1 });
+
 
     res.json({
       data: notifications
@@ -32,7 +34,7 @@ export const getUnreadNotificationCount = async (req: Request, res: Response) =>
     const user = (req as any).user;
 
     const count = await Notification.countDocuments({
-      User_ID: user.id,
+      User_ID: user._id,
       Is_Read: false
     });
 
@@ -58,7 +60,7 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
     const notification = await Notification.findOneAndUpdate(
       {
         _id: id,
-        User_ID: user.id
+        User_ID:  user._id
       },
       {
         Is_Read: true
@@ -93,7 +95,7 @@ export const markAllAsRead = async (req: Request, res: Response) => {
 
     await Notification.updateMany(
       {
-        User_ID: user.id,
+        User_ID: user._id,
         Is_Read: false
       },
       {
