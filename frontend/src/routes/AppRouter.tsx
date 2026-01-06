@@ -7,13 +7,21 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 
 /* Dashboards */
+import AdminLayout from "../layouts/AdminLayout";
 import AdministratorDashboard from "../pages/admin/AdministratorDashboard";
+
+import StoreManagerLayout from "../layouts/StoreManagerLayout";
 import StoreManagerDashboard from "../pages/store-manager/StoreManagerDashboard";
+
 import StoreStaffDashboard from "../pages/store-staff/StoreStaffDashboard";
+
 import CashierDashboard from "../pages/cashier/CashierDashboard";
 
 /* Branch Pages */
 import BranchPage from "../pages/admin/branches/BranchPage";
+import ManageStaffPage from "../pages/store-manager/staff/ManageStaffPage";
+import SuppliersPage from "../pages/admin/suppliers/SupplierPage";
+import SupplierDetailsPage from "../pages/admin/suppliers/SupplierDetailsPage";
 //import ViewBranch from "../pages/branches/ViewBranch";
 //import ManageBranch from "../pages/branches/ManageBranch";
 //import AddBranch from "../pages/branches/AddBranch";
@@ -70,16 +78,53 @@ const AppRouter = () => {
         }
       />
 
+
+
+
+
       {/* ---------- Admin : Branch Management ---------- */}
       <Route
-        path="/branches"
+  path="/dashboard/admin"
+  element={
+    <ProtectedRoute role="Admin">
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+>
+  {/* /dashboard/admin */}
+  <Route index element={<AdministratorDashboard />} />
+
+  {/* /dashboard/admin/branches */}
+  <Route path="branches" element={<BranchPage />} />
+
+  {/* /dashboard/admin/suppliers */}
+  <Route path="suppliers" element={<SuppliersPage />} />
+
+  {/* /dashboard/admin/suppliers/:supplierId */}
+  <Route path="suppliers/:supplierId" element={<SupplierDetailsPage />} />
+
+  {/* future admin routes go here */}
+</Route>
+
+
+
+
+      {/* ---------- Store Manager : Staff Management ---------- */}
+      <Route
+        path="dashboard/store-manager"
         element={
-          <ProtectedRoute role="Admin">
-            <BranchPage />
+          <ProtectedRoute role="StoreManager">
+            <StoreManagerLayout />
           </ProtectedRoute>
         }
-      />
+      >
+      {/* /dashboard/store-manager */}
+  <Route index element={<StoreManagerDashboard />} />
 
+  {/* /dashboard/store-manager/staff */}
+  <Route path="staff" element={<ManageStaffPage />} />
+  {/* future store manager routes go here */}
+</Route>
     </Routes>
   );
 };

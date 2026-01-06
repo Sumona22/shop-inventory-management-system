@@ -1,4 +1,11 @@
-import { Box, Button, MenuItem, Modal, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  MenuItem,
+  Modal,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 import { createStaffOrCashier } from "../../services/staffService";
 
@@ -19,8 +26,8 @@ const modalStyle = {
   borderRadius: 2,
 };
 
-const CreateStaffModal: React.FC<Props> = ({ open, onClose }) => {
-  const [role, setRole] = useState("StoreStaff");
+const AddStaffModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
+  const [role, setRole] = useState<"StoreStaff" | "Cashier">("StoreStaff");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,6 +40,7 @@ const CreateStaffModal: React.FC<Props> = ({ open, onClose }) => {
       Branch_ID: localStorage.getItem("branchId"),
     });
 
+    onSuccess();
     onClose();
     setEmail("");
     setPassword("");
@@ -43,7 +51,7 @@ const CreateStaffModal: React.FC<Props> = ({ open, onClose }) => {
     <Modal open={open} onClose={onClose}>
       <Box sx={modalStyle}>
         <Typography variant="h6" mb={2}>
-          Create Staff or Cashier
+          Add Staff / Cashier
         </Typography>
 
         <TextField
@@ -51,7 +59,7 @@ const CreateStaffModal: React.FC<Props> = ({ open, onClose }) => {
           fullWidth
           label="Role"
           value={role}
-          onChange={(e) => setRole(e.target.value)}
+          onChange={(e) => setRole(e.target.value as "StoreStaff" | "Cashier")}
           sx={{ mb: 2 }}
         >
           <MenuItem value="StoreStaff">Store Staff</MenuItem>
@@ -75,12 +83,12 @@ const CreateStaffModal: React.FC<Props> = ({ open, onClose }) => {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <Button variant="contained" fullWidth onClick={handleSubmit}>
-          Submit
+        <Button fullWidth variant="contained" onClick={handleSubmit}>
+          Create
         </Button>
       </Box>
     </Modal>
   );
 };
 
-export default CreateStaffModal;
+export default AddStaffModal;
