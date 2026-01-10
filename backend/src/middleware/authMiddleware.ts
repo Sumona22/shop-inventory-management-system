@@ -31,6 +31,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     console.log("🔹 User fetched from DB =>", user);
 
     (req as any).user = {
+      id: user._id,
       _id: user._id,              // ✅ FIXED
       role: user.Role,
       Business_ID: user.Business_ID,

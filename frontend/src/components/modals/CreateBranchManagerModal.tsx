@@ -36,7 +36,7 @@ const CreateBranchManagerModal: React.FC<Props> = ({ open, onClose }) => {
         Branch_Address: branchAddress,
         StoreManager_Email: managerEmail,
         StoreManager_Password: managerPassword,
-      });
+      },);
 
       alert("✅ Branch and Store Manager created successfully!");
       onClose();

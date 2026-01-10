@@ -5,6 +5,7 @@ import { createBranchWithManager } from "../../../../services/branchService";
 interface Props {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const modalStyle = {
@@ -19,22 +20,30 @@ const modalStyle = {
   borderRadius: 2,
 };
 
-const CreateBranchModal: React.FC<Props> = ({ open, onClose }) => {
+const CreateBranchModal: React.FC<Props> = ({ open, onClose, onSuccess }) => {
   const [branchName, setBranchName] = useState("");
   const [branchAddress, setBranchAddress] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async () => {
-    await createBranchWithManager({
-      Business_ID: localStorage.getItem("businessId"),
-      Branch_Name: branchName,
-      Branch_Address: branchAddress,
-      StoreManager_Email: email,
-      StoreManager_Password: password,
-    });
+    try {
+      await createBranchWithManager({
+        Business_ID: localStorage.getItem("businessId"),
+        Branch_Name: branchName,
+        Branch_Address: branchAddress,
+        StoreManager_Email: email,
+        StoreManager_Password: password,
+      });
 
-    onClose();
+      alert("Branch and Store Manager created successfully");
+      onClose();
+      onSuccess?.();
+    } catch (err: Error | unknown) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to create branch";
+      alert(errorMessage);
+    }
   };
 
   return (
