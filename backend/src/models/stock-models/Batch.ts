@@ -7,6 +7,7 @@ export enum Batch_Status {
 }
 
 export interface IBatch extends Document {
+    Business_ID: mongoose.Types.ObjectId;
     Branch_ID: mongoose.Types.ObjectId;
     Product_Variant_ID: mongoose.Types.ObjectId;
 
@@ -22,6 +23,11 @@ export interface IBatch extends Document {
 
 const batchSchema = new Schema<IBatch>(
     {
+        Business_ID: {
+            type: Schema.Types.ObjectId,
+            ref: "Business",
+            required: true,
+        },
         Branch_ID: {
             type: Schema.Types.ObjectId,
             ref: "Branch",
@@ -59,8 +65,8 @@ const batchSchema = new Schema<IBatch>(
     }
 );
 
-batchSchema.index({ Branch_ID: 1, Product_Variant_ID: 1, Batch_No: 1 }, { unique: true });
-batchSchema.index({Exp_Date: 1});
-batchSchema.index({Batch_Status: 1});
+batchSchema.index({ Business_ID: 1, Branch_ID: 1, Product_Variant_ID: 1, Batch_No: 1 }, { unique: true });
+batchSchema.index({ Exp_Date: 1 });
+batchSchema.index({ Batch_Status: 1 });
 
 export default mongoose.model<IBatch>("Batch", batchSchema);

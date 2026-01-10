@@ -1,53 +1,30 @@
-import { Request, Response } from "express"
-import User from "../../models/User";
-import Branch from "../../models/Branch";
-import ProductVariant from "../../models/product-models/ProductVariant";
+import { Request, Response } from "express";
 import BranchStock from "../../models/stock-models/BranchStock";
 
-const createBranchStock = async (req: Request, res: Response) => {
-    try {
-        const requester = await User.findById((res as any).used.id);
+/* Fetch branch stock for all product variants */
 
-        if (!requester || requester.Role !== "StoreManager") {
-            return res.status(403).json({ message: "Only store manager is allowed to create branch stock" });
-        }
+export const getBranchStock = async (req: any, res: Response) => {
+  const { branchId } = req.params;
 
-        const { Product_Variant_ID, Quantity } = req.body;
+  const stock = await BranchStock.find({
+    Business_ID: req.user.Business_ID,
+    Branch_ID: branchId,
+  }).populate("Product_Variant_ID");
 
-        const branch = await Branch.findOne({
-            _id: requester.Branch_ID,
-            Business_ID: requester.Business_ID,
-        });
-
-        if (!branch) {
-            return res.status(404).json({ message: "Branch not found" });
-        }
-
-        const productVariant = await ProductVariant.findOne({
-            _id: Product_Variant_ID,
-            Business_ID: requester.Business_ID,
-        });
-
-        if (!productVariant) {
-            return res.status(404).json({ message: "Product variant not found" });
-        }
-
-        const branchStock = await BranchStock.create({
-            Business_ID: requester.Business_ID,
-            Branch_ID: requester.Branch_ID,
-            Product_Variant_ID,
-            Quantity
-        });
-
-        res.status(201).json({
-            message: "Branch stock added successfully",
-            Branch_Stock_ID: branchStock._id,
-        })
-    }
-    catch (err: any) {
-        res.status(400).json({
-            message: "Variant creation failed",
-            error: err.message,
-        });
-    }
+  res.status(200).json(stock);
 };
+
+/* Fetch Product variant-wise branch stock */
+
+export const getBranchProductStock = async (req: any, res: Response) => {
+  const { branchId, productVariantId } = req.params;
+
+  const stock = await BranchStock.findOne({
+    Business_ID: req.user.Business_ID,
+    Branch_ID: branchId,
+    Product_Variant_ID: productVariantId,
+  });
+
+  res.status(200).json(stock);
+};
+
