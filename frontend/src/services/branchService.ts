@@ -2,7 +2,17 @@ import { api } from "../api/api";
 
 /* Fetch all branches (Admin only) */
 export const fetchBranches = async () => {
-  return api.get("/branches");
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
+
+  return api.get("/branches", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 };
 
 /* Create branch with store manager (Admin only) */
@@ -14,6 +24,10 @@ export const createBranchWithManager = async (payload: {
   StoreManager_Password: string;
 }) => {
   const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Not authenticated");
+  }
 
   return api.post(
     "/users/branch-with-manager",

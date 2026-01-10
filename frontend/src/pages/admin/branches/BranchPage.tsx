@@ -22,7 +22,6 @@ const BranchPage: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openModal, setOpenModal] = useState(false);
 
- useEffect(() => {
   const loadBranches = async () => {
     try {
       const res = await fetchBranches();
@@ -39,8 +38,9 @@ const BranchPage: React.FC = () => {
     }
   };
 
-  loadBranches();
-}, []);
+  useEffect(() => {
+    loadBranches();
+  }, []);
 
   const filtered = rows.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
@@ -66,7 +66,7 @@ const BranchPage: React.FC = () => {
         onRowsPerPageChange={setRowsPerPage}
       />
 
-      <CreateBranchModal open={openModal} onClose={() => setOpenModal(false)} />
+      <CreateBranchModal open={openModal} onClose={() => setOpenModal(false)} onSuccess={loadBranches} />
     </Container>
   );
 };

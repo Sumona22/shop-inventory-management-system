@@ -38,18 +38,19 @@ const CreateSupplierModal: React.FC<Props> = ({
   });
 
   const submit = async () => {
-    await api.post("/suppliers", {
-      ...form,
-      Business_ID: localStorage.getItem("businessId"),
-    },
-    {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+    try {
+      await api.post("/suppliers", {
+        ...form,
+        Business_ID: localStorage.getItem("businessId"),
+      });
+
+      alert("Supplier added successfully");
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.message || err?.message || "Failed to add supplier");
     }
-);
-    onSuccess();
-    onClose();
   };
 
   return (
