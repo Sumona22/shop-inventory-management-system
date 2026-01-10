@@ -7,21 +7,14 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-import {
-  Add,
-  BarChart,
-  Chat,
-  Logout,
-  Notifications,
-  People,
-  Store,
-} from "@mui/icons-material";
+import { Logout, Store } from "@mui/icons-material";
+import { useNavigate, useLocation } from "react-router-dom";
+import { storeManagerMenu } from "./configStoreManagerSidebar";
 
-interface Props {
-  onAddStaff: () => void;
-}
+const StoreManagerSidebar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-const StoreManagerSidebar: React.FC<Props> = ({ onAddStaff }) => {
   return (
     <Box
       sx={{
@@ -41,34 +34,26 @@ const StoreManagerSidebar: React.FC<Props> = ({ onAddStaff }) => {
       <Divider sx={{ mb: 2 }} />
 
       <List>
-        <ListItemButton onClick={onAddStaff}>
-          <ListItemIcon><Add /></ListItemIcon>
-          <ListItemText primary="Add Staff / Cashier" />
-        </ListItemButton>
-
-        <ListItemButton>
-          <ListItemIcon><People /></ListItemIcon>
-          <ListItemText primary="Manage Staff" />
-        </ListItemButton>
-
-        <ListItemButton>
-          <ListItemIcon><BarChart /></ListItemIcon>
-          <ListItemText primary="Sales Records" />
-        </ListItemButton>
-
-        <ListItemButton>
-          <ListItemIcon><Chat /></ListItemIcon>
-          <ListItemText primary="Communication" />
-        </ListItemButton>
-
-        <ListItemButton>
-          <ListItemIcon><Notifications /></ListItemIcon>
-          <ListItemText primary="Stock Alerts" />
-        </ListItemButton>
+        {storeManagerMenu.map((item) => (
+          <ListItemButton
+            key={item.label}
+            selected={location.pathname === item.path}
+            onClick={() => navigate(item.path)}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.label} />
+          </ListItemButton>
+        ))}
 
         <Divider sx={{ my: 2 }} />
 
-        <ListItemButton sx={{ color: "error.main" }}>
+        <ListItemButton
+          sx={{ color: "error.main" }}
+          onClick={() => {
+            localStorage.clear();
+            navigate("/login");
+          }}
+        >
           <ListItemIcon sx={{ color: "error.main" }}>
             <Logout />
           </ListItemIcon>

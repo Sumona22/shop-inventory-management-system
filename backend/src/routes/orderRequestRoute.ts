@@ -70,7 +70,7 @@ router.get(
 router.patch(
   "/admin/:id/modify",
   protect,
-  authorize("ADMIN"),
+  authorize("Admin"),
   modifyOrderRequest
 );
 
@@ -78,7 +78,7 @@ router.patch(
 router.patch(
   "/admin/:id/waiting",
   protect,
-  authorize("ADMIN"),
+  authorize("Admin"),
   markWaitingForAvailability
 );
 
@@ -86,7 +86,7 @@ router.patch(
 router.patch(
   "/admin/:id/approve",
   protect,
-  authorize("ADMIN"),
+  authorize("Admin"),
   approveOrderRequest
 );
 
@@ -94,7 +94,7 @@ router.patch(
 router.patch(
   "/admin/:id/reject",
   protect,
-  authorize("ADMIN"),
+  authorize("Admin"),
   rejectOrderRequest
 );
 

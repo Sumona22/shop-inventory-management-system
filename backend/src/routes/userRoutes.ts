@@ -3,6 +3,7 @@ import { protect, authorize } from "../middleware/authMiddleware";
 import {
   createBranchWithStoreManager,
   createStaffOrCashier,
+  getStaffByBranch
 } from "../controllers/userController";
 
 const router = express.Router();
@@ -21,6 +22,14 @@ router.post(
   protect,
   authorize("StoreManager"),
   createStaffOrCashier
+);
+
+// Store Manager: Get staff by branch
+router.get(
+  "/staff", 
+  protect,
+  authorize("StoreManager"),
+  getStaffByBranch
 );
 
 export default router;

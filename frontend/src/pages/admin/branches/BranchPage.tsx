@@ -4,6 +4,16 @@ import BranchToolbar from "./components/BranchToolbar";
 import BranchTable from "./components/BranchTable";
 import CreateBranchModal from "./components/CreateBranchModal";
 import type { Branch } from "./types/branch";
+import { fetchBranches } from "../../../services/branchService";
+
+interface BranchResponse {
+  _id: string;
+  Branch_Name: string;
+  Branch_Address: string;
+  StoreManager_User_ID: {
+    Email: string;
+  };
+}
 
 const BranchPage: React.FC = () => {
   const [rows, setRows] = useState<Branch[]>([]);
@@ -12,12 +22,25 @@ const BranchPage: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [openModal, setOpenModal] = useState(false);
 
-  useEffect(() => {
-    setRows([
-      { id: 1, name: "ABC Store Bansdroni", email: "abcb@gmail.com" },
-      { id: 2, name: "ABC Store Salt Lake", email: "abcs@gmail.com" },
-    ]);
-  }, []);
+ useEffect(() => {
+  const loadBranches = async () => {
+    try {
+      const res = await fetchBranches();
+      setRows(
+        res.data.map((b: BranchResponse) => ({
+          id: b._id,
+          name: b.Branch_Name,
+          address: b.Branch_Address,
+          managerEmail: b.StoreManager_User_ID.Email,
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to fetch branches", err);
+    }
+  };
+
+  loadBranches();
+}, []);
 
   const filtered = rows.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())

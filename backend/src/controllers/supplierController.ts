@@ -79,3 +79,80 @@ export const addSupplier = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const getSuppliers = async (req: Request, res: Response) => {
+  try {
+    const requester = await User.findById((req as any).user.id);
+
+    if (!requester || requester.Role !== "Admin") {
+      return res.status(403).json({
+        message: "Only Admin can view suppliers",
+      });
+    }
+
+    const suppliers = await Supplier.find({
+      Business_ID: requester.Business_ID,
+      Is_Active: true,
+    }).sort({ createdAt: -1 });
+
+    return res.status(200).json(suppliers);
+  } catch (error) {
+    console.error("Get Suppliers Error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+
+export const getSupplierById = async (req: Request, res: Response) => {
+  try {
+    const requester = await User.findById((req as any).user.id);
+    if (!requester || requester.Role !== "Admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const supplier = await Supplier.findOne({
+      _id: req.params.id,
+      Business_ID: requester.Business_ID,
+    });
+
+    if (!supplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    res.status(200).json(supplier);
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+export const updateSupplier = async (req: Request, res: Response) => {
+  try {
+    const requester = await User.findById((req as any).user.id);
+    if (!requester || requester.Role !== "Admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const supplier = await Supplier.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        Business_ID: requester.Business_ID,
+      },
+      req.body,
+      { new: true }
+    );
+
+    if (!supplier) {
+      return res.status(404).json({ message: "Supplier not found" });
+    }
+
+    res.status(200).json({
+      message: "Supplier updated",
+      supplier,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
