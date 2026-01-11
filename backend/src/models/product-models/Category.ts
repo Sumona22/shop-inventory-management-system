@@ -19,14 +19,15 @@ const categorySchema = new Schema<ICategory>(
             required: true,
             trim: true,
             set: (value: string) => value.replace(/\s+/g, " "),
-            validate:{
-                validator: (value: string) => value.length > 0,
-                message: "Category name can not be empty or spaces only",
+            validate: {
+                validator: (value: string) => value.trim().length > 0,
+                message: "Category name cannot be empty or spaces only",
             }
-        }
+        },
+        Category_Description: { type: String, trim: true },
     }
 );
 
-categorySchema.index({ Business_ID: 1, Category_Name: 1}, {unique: true});
+categorySchema.index({ Business_ID: 1, Category_Name: 1 }, { unique: true });
 
 export default mongoose.model<ICategory>("Category", categorySchema);

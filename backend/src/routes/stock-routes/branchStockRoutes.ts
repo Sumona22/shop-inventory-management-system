@@ -1,29 +1,20 @@
 import express from "express";
 import { protect, authorize } from "../../middleware/authMiddleware";
-import { getBusinessTotalStock } from "../../controllers/stock-controllers/businessStockController";
-import BranchStock from "../../models/stock-models/BranchStock";
+import {
+  getBranchStock,
+  getBranchProductStock,
+  updateBranchStock,
+} from "../../controllers/stock-controllers/branchStockController";
 
 const router = express.Router();
 
-/* View branch stock (staff + cashier + manager) */
-router.get(
-  "/branch",
-  protect,
-  authorize("Admin", "StoreManager", "StoreStaff", "Cashier"),
-  async (req: any, res) => {
-    const stock = await BranchStock.find({
-      Branch_ID: req.user.Branch_ID,
-    }).populate("Product_Variant_ID");
-    res.json(stock);
-  }
-);
+/* Get all branch stock */
+router.get("/:branchId", protect, authorize("Admin", "StoreManager", "StoreStaff", "Cashier"), getBranchStock);
 
-/* View business stock (Admin only) */
-router.get(
-  "/business",
-  protect,
-  authorize("Admin"),
-  getBusinessTotalStock
-);
+/* Get stock of a specific branch product */
+router.get("/:branchId/product/:branchProductId", protect, authorize("Admin", "StoreManager", "StoreStaff", "Cashier"), getBranchProductStock);
+
+/* Update stock quantity */
+router.put("/:branchId/product/:branchProductId", protect, authorize("Admin", "StoreManager"), updateBranchStock);
 
 export default router;

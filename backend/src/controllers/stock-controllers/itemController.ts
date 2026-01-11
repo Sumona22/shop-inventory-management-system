@@ -3,33 +3,49 @@ import mongoose from "mongoose";
 import Item from "../../models/stock-models/Item";
 import ProductVariant from "../../models/product-models/ProductVariant";
 import { incrementBranchStock } from "../../utils/updateBranchStock";
+import BranchProduct from "../../models/stock-models/BranchProduct";
+
+/* Create Item (Serial Tracking) */
 
 export const createItem = async (req: any, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const { Product_Variant_ID, Item_No, Mfg_Date, Warranty_Expiry } = req.body;
+    const { Branch_Product_ID, Item_No, Mfg_Date, Warranty_Expiry } = req.body;
 
-    const productVariant = await ProductVariant.findOne({
-      _id: Product_Variant_ID,
+    /* Validate Branch Product */
+    const branchProduct = await BranchProduct.findOne({
+      _id: Branch_Product_ID,
       Business_ID: req.user.Business_ID,
-      Tracking_Type: "ITEM"
+      Branch_ID: req.user.Branch_ID,
+    }).session(session);
 
+    if (!branchProduct) {
+      return res.status(404).json({ message: "Branch product not found" });
+    }
+
+    /* Validate Product Variant tracking type */
+    const productVariant = await ProductVariant.findOne({
+      _id: branchProduct.Product_Variant_ID,
+      Business_ID: req.user.Business_ID,
+      Tracking_Type: "ITEM",
     });
 
     if (!productVariant) {
-      return res.status(404).json({
-        message: "Item tracking not enabled for this product variant",
+      return res.status(400).json({
+        message: "Item tracking not enabled for this product",
       });
     }
 
+    /* Create Item */
     const item = await Item.create(
       [
         {
           Business_ID: req.user.Business_ID,
           Branch_ID: req.user.Branch_ID,
-          Product_Variant_ID,
+          Branch_Product_ID,
+          Product_Variant_ID: productVariant._id,
           Item_No,
           Mfg_Date,
           Warranty_Expiry,
@@ -38,10 +54,11 @@ export const createItem = async (req: any, res: Response) => {
       { session }
     );
 
+    /* Increment Branch Stock */
     await incrementBranchStock({
       Business_ID: req.user.Business_ID,
       Branch_ID: req.user.Branch_ID,
-      Product_Variant_ID,
+      Branch_Product_ID,
       quantity: 1,
       session,
     });
@@ -50,7 +67,7 @@ export const createItem = async (req: any, res: Response) => {
     session.endSession();
 
     res.status(201).json({
-      message: "Item added successfully",
+      message: "Item created successfully",
       Item_ID: item[0]._id,
     });
   } catch (err: any) {
@@ -60,32 +77,36 @@ export const createItem = async (req: any, res: Response) => {
   }
 };
 
-
-/* Fetch ALL Items */
+/* Get Items by Branch */
 
 export const getItemsByBranch = async (req: any, res: Response) => {
   const items = await Item.find({
     Business_ID: req.user.Business_ID,
     Branch_ID: req.user.Branch_ID,
-  }).populate("Product_Variant_ID");
+  })
+    .populate("Branch_Product_ID")
+    .populate("Product_Variant_ID");
 
   res.status(200).json(items);
 };
 
-
-
-/* Fetch Item by Item_ID */
+/* Get Items by ID */
 
 export const getItemById = async (req: any, res: Response) => {
   const item = await Item.findOne({
     _id: req.params.id,
     Business_ID: req.user.Business_ID,
-  });
+  })
+    .populate("Branch_Product_ID")
+    .populate("Product_Variant_ID");
 
-  if (!item) return res.status(404).json({ message: "Item not found" });
+  if (!item) {
+    return res.status(404).json({ message: "Item not found" });
+  }
 
   res.status(200).json(item);
 };
+
 
 /* Update Item */
 
@@ -105,3 +126,6 @@ export const updateItem = async (req: any, res: Response) => {
 
   res.status(200).json(updatedItem);
 };
+
+
+

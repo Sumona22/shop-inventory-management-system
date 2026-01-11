@@ -6,8 +6,9 @@ export enum Item_Status {
 }
 
 export interface IItem extends Document {
+    Business_ID: mongoose.Types.ObjectId;
     Branch_ID: mongoose.Types.ObjectId;
-    Product_Variant_ID: mongoose.Types.ObjectId;
+    Branch_Product_ID: mongoose.Types.ObjectId;
 
     Item_No: string;
 
@@ -19,14 +20,19 @@ export interface IItem extends Document {
 
 const itemSchema = new Schema<IItem>(
     {
+        Business_ID: {
+            type: Schema.Types.ObjectId,
+            ref: "Business",
+            required: true,
+        },
         Branch_ID: {
             type: Schema.Types.ObjectId,
             ref: "Branch",
             required: true,
         },
-        Product_Variant_ID: {
+        Branch_Product_ID: {
             type: Schema.Types.ObjectId,
-            ref: "ProductVariant",
+            ref: "BranchProduct",
             required: true,
         },
 
@@ -57,6 +63,7 @@ const itemSchema = new Schema<IItem>(
 );
 
 itemSchema.index({ Branch_ID: 1, Product_Variant_ID: 1, Item_No: 1 }, { unique: true });
-itemSchema.index({ Product_Variant_ID: 1 });
+itemSchema.index({ Branch_Product_ID: 1 });
+itemSchema.index({ Item_Status: 1 })
 
 export default mongoose.model<IItem>("Item", itemSchema);
