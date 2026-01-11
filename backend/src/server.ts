@@ -6,6 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import allProductRoutes from "./routes/product-routes";
 import orderRequestRoute from "./routes/orderRequestRoute";
+import stockRoutes from "./routes/stock-routes";
 import branchRoutes from "./routes/branchRoutes";
 import supplierProductRoutes from "./routes/supplierProductRoutes";
 import supplierRoutes from "./routes/supplierRoutes";
@@ -27,6 +28,9 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api", allProductRoutes);
+app.use("/api",orderRequestRoute);
+app.use("/api", stockRoutes);
 
 app.use("/api/branches", branchRoutes);
 

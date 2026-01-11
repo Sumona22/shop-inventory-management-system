@@ -1,53 +1,92 @@
-import { Request, Response } from "express"
-import User from "../../models/User";
-import Branch from "../../models/Branch";
-import ProductVariant from "../../models/product-models/ProductVariant";
+import { Request, Response } from "express";
 import BranchStock from "../../models/stock-models/BranchStock";
 
-const createBranchStock = async (req: Request, res: Response) => {
-    try {
-        const requester = await User.findById((res as any).used.id);
+/* Fetch all branch stock for a branch */
+export const getBranchStock = async (req: any, res: Response) => {
+  try {
+    const { branchId } = req.params;
 
-        if (!requester || requester.Role !== "StoreManager") {
-            return res.status(403).json({ message: "Only store manager is allowed to create branch stock" });
-        }
+    const stock = await BranchStock.find({
+      Business_ID: req.user.Business_ID,
+      Branch_ID: branchId,
+    }).populate({
+      path: "Branch_Product_ID",
+      populate: {
+        path: "Product_Variant_ID Product_ID",
+      },
+    });
 
-        const { Product_Variant_ID, Quantity } = req.body;
+    res.status(200).json(stock);
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch branch stock",
+      error: err.message,
+    });
+  }
+};
 
-        const branch = await Branch.findOne({
-            _id: requester.Branch_ID,
-            Business_ID: requester.Business_ID,
-        });
+/* Fetch stock for a specific branch product */
+export const getBranchProductStock = async (req: any, res: Response) => {
+  try {
+    const { branchId, branchProductId } = req.params;
 
-        if (!branch) {
-            return res.status(404).json({ message: "Branch not found" });
-        }
+    const stock = await BranchStock.findOne({
+      Business_ID: req.user.Business_ID,
+      Branch_ID: branchId,
+      Branch_Product_ID: branchProductId,
+    }).populate({
+      path: "Branch_Product_ID",
+      populate: {
+        path: "Product_Variant_ID Product_ID",
+      },
+    });
 
-        const productVariant = await ProductVariant.findOne({
-            _id: Product_Variant_ID,
-            Business_ID: requester.Business_ID,
-        });
-
-        if (!productVariant) {
-            return res.status(404).json({ message: "Product variant not found" });
-        }
-
-        const branchStock = await BranchStock.create({
-            Business_ID: requester.Business_ID,
-            Branch_ID: requester.Branch_ID,
-            Product_Variant_ID,
-            Quantity
-        });
-
-        res.status(201).json({
-            message: "Branch stock added successfully",
-            Branch_Stock_ID: branchStock._id,
-        })
+    if (!stock) {
+      return res.status(404).json({ message: "Stock not found" });
     }
-    catch (err: any) {
-        res.status(400).json({
-            message: "Variant creation failed",
-            error: err.message,
-        });
+
+    res.status(200).json(stock);
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch branch product stock",
+      error: err.message,
+    });
+  }
+};
+
+/* Update branch stock quantity */
+export const updateBranchStock = async (req: any, res: Response) => {
+  try {
+    const { branchId, branchProductId } = req.params;
+    const { quantity } = req.body;
+
+    if (quantity === undefined) {
+      return res.status(400).json({ message: "Quantity is required" });
     }
+
+    const stock = await BranchStock.findOne({
+      Business_ID: req.user.Business_ID,
+      Branch_ID: branchId,
+      Branch_Product_ID: branchProductId,
+    });
+
+    if (!stock) {
+      return res.status(404).json({ message: "Stock not found" });
+    }
+
+    stock.Quantity = quantity;
+
+    await stock.save();
+
+    res.status(200).json({
+      message: "Branch stock updated successfully",
+      Branch_Stock_ID: stock._id,
+      Quantity: stock.Quantity,
+    });
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to update branch stock",
+      error: err.message,
+    });
+  }
 };

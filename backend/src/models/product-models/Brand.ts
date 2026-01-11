@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from "mongoose";
-import Business from "../Business";
 
 export interface IBrand extends Document {
     Business_ID: mongoose.Types.ObjectId;
@@ -11,7 +10,7 @@ const brandSchema = new Schema<IBrand>(
     {
         Business_ID: {
             type: Schema.Types.ObjectId,
-            ref: Business,
+            ref: "Business",
             required: true,
         },
         Brand_Name: {
@@ -20,8 +19,8 @@ const brandSchema = new Schema<IBrand>(
             trim: true,
             set: (value: string) => value.replace(/\s+/g, " "),
             validate: {
-                validator: (value, string) => value.length > 0,
-                message: "Brand name can not be empty or spaces only",
+                validator: (value: string) => value.trim().length > 0,
+                message: "Brand name cannot be empty or spaces only",
             }
         },
         Brand_Description: { type: String, trim: true },

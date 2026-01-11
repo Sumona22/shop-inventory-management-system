@@ -16,7 +16,7 @@ router.post(
   createProduct
 );
 
-/* Get all products */
+/* Get all products or Category-wise*/
 router.get(
   "/",
   protect,

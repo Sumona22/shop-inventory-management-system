@@ -116,8 +116,7 @@ export const updateCategory = async (req: Request, res: Response) => {
         }
 
         if (Category_Name !== undefined) category.Category_Name = Category_Name;
-        if (Category_Description !== undefined)
-            category.Category_Description = Category_Description;
+        if (Category_Description !== undefined) category.Category_Description = Category_Description;
 
         await category.save();
 

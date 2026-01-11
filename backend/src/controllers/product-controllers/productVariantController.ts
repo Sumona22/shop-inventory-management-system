@@ -3,6 +3,8 @@ import Brand from "../../models/product-models/Brand";
 import Product from "../../models/product-models/Product";
 import ProductVariant from "../../models/product-models/ProductVariant";
 import User from "../../models/User";
+import { normalizeSKU } from "../../utils/skuUtils";
+
 
 /* Create Product Variant */
 export const createProductVariant = async (req: Request, res: Response) => {
@@ -18,6 +20,7 @@ export const createProductVariant = async (req: Request, res: Response) => {
       SKU,
       Pack_Size,
       Unit,
+      Price,
       Attributes,
       Tracking_Type,
     } = req.body;
@@ -36,11 +39,8 @@ export const createProductVariant = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Product or Brand not found" });
     }
 
-    const SKU_Normalized = SKU
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9-]/g, "");
+    const SKU_Normalized = normalizeSKU(SKU);
+
 
 
     const productVariant = await ProductVariant.create({
@@ -51,6 +51,7 @@ export const createProductVariant = async (req: Request, res: Response) => {
       SKU_Normalized,
       Pack_Size,
       Unit,
+      Price,
       Attributes,
       Tracking_Type
     });
@@ -93,4 +94,76 @@ export const getProductVariants = async (req: Request, res: Response) => {
     });
   }
 };
+
+/* Update Product Variant */
+export const updateProductVariant = async (req: Request, res: Response) => {
+  try {
+    const { variantId } = req.params;
+
+    const requester = await User.findById((req as any).user.id);
+    if (!requester || requester.Role !== "Admin") {
+      return res.status(403).json({ message: "Only admin can update product variants" });
+    }
+
+    const {
+      SKU,
+      Pack_Size,
+      Unit,
+      Price,
+      Attributes,
+      Tracking_Type,
+      Brand_ID,
+    } = req.body;
+
+    const variant = await ProductVariant.findOne({
+      _id: variantId,
+      Business_ID: requester.Business_ID,
+    });
+
+    if (!variant) {
+      return res.status(404).json({ message: "Product variant not found" });
+    }
+
+    // Optional brand validation
+    if (Brand_ID) {
+      const brand = await Brand.findOne({
+        _id: Brand_ID,
+        Business_ID: requester.Business_ID,
+      });
+
+      if (!brand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+
+      variant.Brand_ID = Brand_ID;
+    }
+
+    // SKU update + normalization
+    if (SKU !== undefined) {
+      variant.SKU = SKU;
+      variant.SKU_Normalized = normalizeSKU(SKU);
+
+    }
+
+    if (Pack_Size !== undefined) variant.Pack_Size = Pack_Size;
+    if (Unit !== undefined) variant.Unit = Unit;
+    if (Price !== undefined) variant.Price = Price;
+    if (Attributes !== undefined) variant.Attributes = Attributes;
+    if (Tracking_Type !== undefined) variant.Tracking_Type = Tracking_Type;
+
+    await variant.save();
+
+    res.status(200).json({
+      message: "Product variant updated successfully",
+      Product_Variant_ID: variant._id,
+    });
+  } catch (err: any) {
+    res.status(400).json({
+      message: "Failed to update product variant",
+      error: err.message,
+    });
+  }
+};
+ 
+
 
