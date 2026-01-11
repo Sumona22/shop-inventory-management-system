@@ -5,6 +5,8 @@ import User from "../../models/User";
 import { createBulkNotifications } from "../../services/notificationService";
 import { NotificationType } from "../../models/Notification";
 import mongoose from "mongoose";
+import BranchProduct from "../../models/stock-models/BranchProduct";
+import ProductVariant from "../../models/product-models/ProductVariant";
 
 /* =====================================
    CREATE ORDER REQUEST (STORE MANAGER)
@@ -25,7 +27,41 @@ export const createOrderRequest = async (req: Request & { user?: any }, res: Res
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
     }
+    // Ensure BranchProduct exists for every ordered product
+    for (const item of Items) {
+      const { Product_Variant_ID } = item;
 
+      //  Validate Product Variant
+      const variant = await ProductVariant.findOne({
+        _id: Product_Variant_ID,
+        Business_ID: req.user.Business_ID
+      });
+
+      if (!variant) {
+        return res.status(404).json({
+          message: "Invalid product variant in order",
+          Product_Variant_ID
+        });
+      }
+
+      //  Check if BranchProduct exists
+      let branchProduct = await BranchProduct.findOne({
+        Business_ID: req.user.Business_ID,
+        Branch_ID: req.user.Branch_ID,
+        Product_Variant_ID
+      });
+
+      //  Auto-create if missing (STORE MANAGER OWNS THIS)
+      if (!branchProduct) {
+        branchProduct = await BranchProduct.create({
+          Business_ID: req.user.Business_ID,
+          Branch_ID: req.user.Branch_ID,
+          Product_Variant_ID,
+          Is_Active: true,
+          Alert_Threshold: 5 // default
+        });
+      }
+    }
     const order = await OrderRequest.create({
       Business_ID: req.user.Business_ID,     // ✅ FROM TOKEN
       Branch_ID: req.user.Branch_ID,         // ✅ FROM TOKEN
