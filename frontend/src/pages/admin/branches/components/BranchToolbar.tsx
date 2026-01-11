@@ -20,7 +20,7 @@ const BranchToolbar: React.FC<Props> = ({
       justifyContent="space-between"
       sx={{ mb: 3 }}
     >
-      <Grid xs={8}>
+      <Grid size={8}>
         <TextField
           fullWidth
           label="Search Branch"
@@ -29,7 +29,7 @@ const BranchToolbar: React.FC<Props> = ({
         />
       </Grid>
 
-      <Grid xs={4} display="flex" justifyContent="flex-end">
+      <Grid size={4} display="flex" justifyContent="flex-end">
         <Button variant="contained" onClick={onAddClick}>
           Add Branch
         </Button>
