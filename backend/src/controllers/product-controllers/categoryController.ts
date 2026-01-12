@@ -7,16 +7,15 @@ import Category from "../../models/product-models/Category";
 
 export const createCategory = async (req: Request, res: Response) => {
     try {
-        const { Business_ID, Category_Name, Category_Description } = req.body;
+        const { Category_Name, Category_Description } = req.body;
         const requester = await User.findById((req as any).user.id);
+
+        const Business_ID = requester?.Business_ID;
 
         if (!requester || requester.Role !== "Admin") {
             return res.status(403).json({ message: "Only admin can create category" });
         }
 
-        if (requester.Business_ID?.toString() !== Business_ID) {
-            return res.status(403).json({ message: "Admin can only create categories for their own business" });
-        }
 
         const business = await Business.findById(Business_ID);
         if (!business) return res.status(404).json({ message: "Business not found" });
