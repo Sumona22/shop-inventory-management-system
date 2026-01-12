@@ -22,11 +22,6 @@ import BranchPage from "../pages/admin/branches/BranchPage";
 import ManageStaffPage from "../pages/store-manager/staff/ManageStaffPage";
 import SuppliersPage from "../pages/admin/suppliers/SupplierPage";
 import SupplierDetailsPage from "../pages/admin/suppliers/SupplierDetailsPage";
-import ProductVariantsPage from "../pages/admin/products/product-variants/ProductVariantPage";
-import BrandPage from "../pages/admin/products/brands/BrandPage";
-import CategoryPage from "../pages/admin/products/categories/CategoyPage";
-import ProductPage from "../pages/admin/products/products/ProductPage";
-
 //import ViewBranch from "../pages/branches/ViewBranch";
 //import ManageBranch from "../pages/branches/ManageBranch";
 //import AddBranch from "../pages/branches/AddBranch";
@@ -107,7 +102,9 @@ const AppRouter = () => {
 
         {/* /dashboard/admin/suppliers/:supplierId */}
         <Route path="suppliers/:supplierId" element={<SupplierDetailsPage />} />
-        <Route path="product-variants" element={<ProductVariantsPage />} />
+  <Route path="order-requests" element={<AdminOrderRequests />} />
+  <Route path="order-requests/:orderId" element={<AdminOrderRequestDetails />} />        
+  <Route path="product-variants" element={<ProductVariantsPage />} />
         <Route path="categories" element={<CategoryPage />} />
         <Route path="products" element={<ProductPage />} />
         <Route path="brands" element={<BrandPage />} />
@@ -129,12 +126,13 @@ const AppRouter = () => {
         {/* /dashboard/store-manager */}
         <Route index element={<StoreManagerDashboard />} />
 
-        {/* /dashboard/store-manager/staff */}
-        <Route path="staff" element={<ManageStaffPage />} />
-        {/* future store manager routes go here */}
-
-
-      </Route>
+  {/* /dashboard/store-manager/staff */}
+  <Route path="staff" element={<ManageStaffPage />} />
+  <Route path="order-requests" element={<MyOrderRequests />} />
+  <Route path="order-requests/new" element={<CreateOrderRequest />} />
+  <Route path="order-requests/:id" element={<OrderRequestDetails />} />
+  {/* future store manager routes go here */}
+</Route>
     </Routes>
   );
 };
