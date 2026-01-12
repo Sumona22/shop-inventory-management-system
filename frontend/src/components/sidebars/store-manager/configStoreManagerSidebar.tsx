@@ -4,6 +4,8 @@ import {
   BarChart,
   Chat,
   Notifications,
+  AddShoppingCart,
+  ListAlt,
 } from "@mui/icons-material";
 
 /* ================= Store Manager Menu ================= */
@@ -24,9 +26,20 @@ export const storeManagerMenu = [
     icon: <BarChart />,
   },
   {
-    label: "Communication",
-    path: "/dashboard/store-manager/communication",
+    label: "Order",
     icon: <Chat />,
+    subMenu: [
+      {
+        name: "Create Order",
+        icon: <AddShoppingCart />,
+        path: "/dashboard/store-manager/order-requests/new",
+      },
+      {
+        name: "My Orders",
+        icon: <ListAlt />,
+        path: "/dashboard/store-manager/order-requests",
+      },
+    ],
   },
   {
     label: "Stock Alerts",
