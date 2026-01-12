@@ -22,6 +22,11 @@ import BranchPage from "../pages/admin/branches/BranchPage";
 import ManageStaffPage from "../pages/store-manager/staff/ManageStaffPage";
 import SuppliersPage from "../pages/admin/suppliers/SupplierPage";
 import SupplierDetailsPage from "../pages/admin/suppliers/SupplierDetailsPage";
+import MyOrderRequests from "../pages/store-manager/orders/MyOrderRequests";
+import CreateOrderRequest from "../pages/store-manager/orders/CreateOrderRequest";
+import OrderRequestDetails from "../pages/store-manager/orders/OrderRequestDetails";
+import AdminOrderRequests from "../pages/admin/order-requests/AdminOrderRequests";
+import AdminOrderRequestDetails from "../pages/admin/order-requests/AdminOrderRequestDetails";
 //import ViewBranch from "../pages/branches/ViewBranch";
 //import ManageBranch from "../pages/branches/ManageBranch";
 //import AddBranch from "../pages/branches/AddBranch";
@@ -102,7 +107,8 @@ const AppRouter = () => {
 
   {/* /dashboard/admin/suppliers/:supplierId */}
   <Route path="suppliers/:supplierId" element={<SupplierDetailsPage />} />
-
+  <Route path="order-requests" element={<AdminOrderRequests />} />
+  <Route path="order-requests/:orderId" element={<AdminOrderRequestDetails />} />
   {/* future admin routes go here */}
 </Route>
 
@@ -123,6 +129,9 @@ const AppRouter = () => {
 
   {/* /dashboard/store-manager/staff */}
   <Route path="staff" element={<ManageStaffPage />} />
+  <Route path="order-requests" element={<MyOrderRequests />} />
+  <Route path="order-requests/new" element={<CreateOrderRequest />} />
+  <Route path="order-requests/:id" element={<OrderRequestDetails />} />
   {/* future store manager routes go here */}
 </Route>
     </Routes>
