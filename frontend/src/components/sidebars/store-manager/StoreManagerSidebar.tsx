@@ -6,14 +6,28 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
+  Button,
+  Collapse,
 } from "@mui/material";
-import { Logout, Store } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+  Logout,
+  Store,
+  ExpandLess,
+  ExpandMore,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { storeManagerMenu } from "./configStoreManagerSidebar";
+
+const sideBtn = {
+  justifyContent: "flex-start",
+  color: "text.primary",
+  textTransform: "none",
+};
 
 const StoreManagerSidebar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [openProduct, setOpenProduct] = useState(false);
 
   return (
     <Box
@@ -34,15 +48,47 @@ const StoreManagerSidebar = () => {
       <Divider sx={{ mb: 2 }} />
 
       <List>
-        {storeManagerMenu.map((item) => (
-          <ListItemButton
-            key={item.label}
-            selected={location.pathname === item.path}
-            onClick={() => navigate(item.path)}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
+        {storeManagerMenu.map((item, index) => (
+          <Box key={index}>
+            {item.subMenu ? (
+              <>
+                <Button
+                  fullWidth
+                  sx={sideBtn}
+                  startIcon={item.icon}
+                  endIcon={openProduct ? <ExpandLess /> : <ExpandMore />}
+                  onClick={() => setOpenProduct(!openProduct)}
+                >
+                  {item.label}
+                </Button>
+
+                <Collapse in={openProduct} timeout="auto" unmountOnExit>
+                  <Box sx={{ pl: 4 }}>
+                    {item.subMenu.map((sub, i) => (
+                      <Button
+                        key={i}
+                        fullWidth
+                        sx={sideBtn}
+                        startIcon={sub.icon}
+                        onClick={() => navigate(sub.path)}
+                      >
+                        {sub.name}
+                      </Button>
+                    ))}
+                  </Box>
+                </Collapse>
+              </>
+            ) : (
+              <Button
+                fullWidth
+                sx={sideBtn}
+                startIcon={item.icon}
+                onClick={() => navigate(item.path)}
+              >
+                {item.label}
+              </Button>
+            )}
+          </Box>
         ))}
 
         <Divider sx={{ my: 2 }} />
