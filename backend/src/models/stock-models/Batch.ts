@@ -66,7 +66,7 @@ const batchSchema = new Schema<IBatch>(
     }
 );
 
-batchSchema.index({ Business_ID: 1, Branch_ID: 1, Product_Variant_ID: 1, Batch_No: 1 }, { unique: true });
+batchSchema.index({ Business_ID: 1, Branch_ID: 1, Branch_Product_ID: 1, Batch_No: 1 }, { unique: true });
 batchSchema.index({ Exp_Date: 1 });
 batchSchema.index({ Batch_Status: 1 });
 batchSchema.index({ Branch_Product_ID: 1 })

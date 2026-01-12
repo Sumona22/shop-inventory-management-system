@@ -62,7 +62,7 @@ const itemSchema = new Schema<IItem>(
     }
 );
 
-itemSchema.index({ Branch_ID: 1, Product_Variant_ID: 1, Item_No: 1 }, { unique: true });
+itemSchema.index({ Branch_ID: 1, Branch_Product_ID: 1, Item_No: 1 }, { unique: true });
 itemSchema.index({ Branch_Product_ID: 1 });
 itemSchema.index({ Item_Status: 1 })
 

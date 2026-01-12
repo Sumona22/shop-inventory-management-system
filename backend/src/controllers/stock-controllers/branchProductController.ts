@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import BranchProduct from "../../models/stock-models/BranchProduct";
-import BranchStock from "../../models/stock-models/BranchStock";
 import User from "../../models/User";
 
 /* Create / Enable Product for Branch */
@@ -19,14 +18,6 @@ export const createBranchProduct = async (req: Request, res: Response) => {
       Branch_ID,
       Product_Variant_ID,
       Alert_Threshold,
-    });
-
-    // Initialize stock at 0
-    await BranchStock.create({
-      Business_ID: user.Business_ID,
-      Branch_ID,
-      Branch_Product_ID: branchProduct._id,
-      Quantity: 0,
     });
 
     res.status(201).json({
