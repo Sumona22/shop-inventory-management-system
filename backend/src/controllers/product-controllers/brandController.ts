@@ -7,17 +7,12 @@ import Brand from "../../models/product-models/Brand";
 
 export const createBrand = async (req: Request, res: Response) => {
     try {
-        const { Business_ID, Brand_Name, Brand_Description } = req.body;
+        const { Brand_Name, Brand_Description } = req.body;
         const requester = await User.findById((req as any).user.id);
+        const Business_ID = requester?.Business_ID;
 
         if (!requester || requester.Role !== "Admin") {
             return res.status(403).json({ message: "Only admin can create brand" });
-        }
-
-        if (requester.Business_ID?.toString() !== Business_ID) {
-            return res.status(403).json({
-                message: "Admin can only create brands for their own business",
-            });
         }
 
         const business = await Business.findById(Business_ID);
