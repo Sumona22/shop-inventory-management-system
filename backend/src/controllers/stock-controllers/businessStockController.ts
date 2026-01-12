@@ -9,8 +9,17 @@ export const getBusinessTotalStock = async (req: any, res: Response) => {
       },
     },
     {
+      $lookup: {
+        from: "branchproducts",
+        localField: "Branch_Product_ID",
+        foreignField: "_id",
+        as: "branchProduct",
+      },
+    },
+    { $unwind: "$branchProduct" },
+    {
       $group: {
-        _id: "$Product_Variant_ID",
+        _id: "$branchProduct.Product_Variant_ID",
         totalQuantity: { $sum: "$Quantity" },
       },
     },
