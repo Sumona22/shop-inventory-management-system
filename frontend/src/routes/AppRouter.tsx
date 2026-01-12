@@ -16,6 +16,18 @@ import AdminSalesDashboard from "../pages/admin/sales/AdminSalesDashBoard";
 import BranchPage from "../pages/admin/branches/BranchPage";
 import SuppliersPage from "../pages/admin/suppliers/SupplierPage";
 import SupplierDetailsPage from "../pages/admin/suppliers/SupplierDetailsPage";
+import BrandPage from "../pages/admin/products/brands/BrandPage";
+import CategoryPage from "../pages/admin/products/categories/CategoyPage";
+import ProductVariantsPage from "../pages/admin/products/product-variants/ProductVariantPage";
+import ProductPage from "../pages/admin/products/products/ProductPage";
+//import ViewBranch from "../pages/branches/ViewBranch";
+//import ManageBranch from "../pages/branches/ManageBranch";
+//import AddBranch from "../pages/branches/AddBranch";
+
+/* Supplier Pages */
+//import SupplierPage from "../pages/admin/suppliers/SupplierPage";
+//import SupplierDetails from "../pages/admin/suppliers/SupplierDetails";
+//import OrderDetails from "../pages/admin/suppliers/OrderDetails";
 import AdminOrderRequests from "../pages/admin/order-requests/AdminOrderRequests";
 import AdminOrderRequestDetails from "../pages/admin/order-requests/AdminOrderRequestDetails";
 
@@ -98,6 +110,62 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+
+
+
+
+
+      {/* ---------- Admin : Branch Management ---------- */}
+      <Route
+        path="/dashboard/admin"
+        element={
+          <ProtectedRoute role="Admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* /dashboard/admin */}
+        <Route index element={<AdministratorDashboard />} />
+
+        {/* /dashboard/admin/branches */}
+        <Route path="branches" element={<BranchPage />} />
+
+        {/* /dashboard/admin/suppliers */}
+        <Route path="suppliers" element={<SuppliersPage />} />
+
+        {/* /dashboard/admin/suppliers/:supplierId */}
+        <Route path="suppliers/:supplierId" element={<SupplierDetailsPage />} />
+  <Route path="order-requests" element={<AdminOrderRequests />} />
+  <Route path="order-requests/:orderId" element={<AdminOrderRequestDetails />} />        
+  <Route path="product-variants" element={<ProductVariantsPage />} />
+        <Route path="categories" element={<CategoryPage />} />
+        <Route path="products" element={<ProductPage />} />
+        <Route path="brands" element={<BrandPage />} />
+
+      </Route>
+
+
+
+
+      {/* ---------- Store Manager : Staff Management ---------- */}
+      <Route
+        path="dashboard/store-manager"
+        element={
+          <ProtectedRoute role="StoreManager">
+            <StoreManagerLayout />
+          </ProtectedRoute>
+        }
+      >
+        {/* /dashboard/store-manager */}
+        <Route index element={<StoreManagerDashboard />} />
+
+  {/* /dashboard/store-manager/staff */}
+  <Route path="staff" element={<ManageStaffPage />} />
+  <Route path="order-requests" element={<MyOrderRequests />} />
+  <Route path="order-requests/new" element={<CreateOrderRequest />} />
+  <Route path="order-requests/:id" element={<OrderRequestDetails />} />
+  {/* future store manager routes go here */}
+</Route>
     </Routes>
   );
 };

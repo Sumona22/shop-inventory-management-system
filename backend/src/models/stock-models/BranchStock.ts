@@ -45,7 +45,7 @@ const branchStockSchema = new Schema<IBranchStock>(
 );
 
 branchStockSchema.index(
-    { Branch_ID: 1, Product_Variant_ID: 1 },
+    { Branch_ID: 1, Branch_Product_ID: 1 },
     { unique: true }
 );
 branchStockSchema.index({ Business_ID: 1 });
