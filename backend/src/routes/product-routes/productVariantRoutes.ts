@@ -2,6 +2,7 @@ import express from "express";
 import { protect, authorize } from "../../middleware/authMiddleware";
 import {
   createProductVariant,
+  getProductVariantById,
   getProductVariants,
   updateProductVariant,
 } from "../../controllers/product-controllers/productVariantController";
@@ -23,6 +24,10 @@ router.get(
   authorize("Admin", "StoreManager"),
   getProductVariants
 );
+
+/* Get variant by ID */
+
+router.get("/:variantId", protect, getProductVariantById);
 
 /* Update product variant */
 router.put(

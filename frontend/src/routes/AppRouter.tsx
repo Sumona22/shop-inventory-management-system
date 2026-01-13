@@ -20,6 +20,8 @@ import BrandPage from "../pages/admin/products/brands/BrandPage";
 import CategoryPage from "../pages/admin/products/categories/CategoyPage";
 import ProductVariantsPage from "../pages/admin/products/product-variants/ProductVariantPage";
 import ProductPage from "../pages/admin/products/products/ProductPage";
+import ProductVariantDetailsPage from "../pages/admin/products/product-variants/ProductVariantDetailsPage";
+import StoreManagerStocks from "../pages/store-manager/stocks/StoreManagerStocks";
 //import ViewBranch from "../pages/branches/ViewBranch";
 //import ManageBranch from "../pages/branches/ManageBranch";
 //import AddBranch from "../pages/branches/AddBranch";
@@ -143,6 +145,7 @@ const AppRouter = () => {
         <Route path="categories" element={<CategoryPage />} />
         <Route path="products" element={<ProductPage />} />
         <Route path="brands" element={<BrandPage />} />
+        <Route path="product-variants/:variantId" element={<ProductVariantDetailsPage />}/>
 
       </Route>
 
@@ -167,6 +170,9 @@ const AppRouter = () => {
   <Route path="order-requests/new" element={<CreateOrderRequest />} />
   <Route path="order-requests/:id" element={<OrderRequestDetails />} />
   {/* future store manager routes go here */}
+
+  <Route path="/dashboard/store-manager/stocks" element={<StoreManagerStocks />}/>
+
 </Route>
     </Routes>
   );
