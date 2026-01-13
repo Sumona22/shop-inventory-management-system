@@ -17,26 +17,18 @@ import AddIcon from "@mui/icons-material/Add";
 
 import {
   fetchBranchProductsByBranch,
-  createBranchProduct,
   fetchBranchStock,
   updateBranchStock,
 } from "../../../services/stockService";
 import EnableProductModal from "./EnableProductModal";
 
-/* -----------------------------
-   Types
------------------------------ */
+/*            Types              */
 interface ProductVariant {
   _id: string;
   SKU: string;
-  SKU_Normalized?: string;
-  Pack_Size?: number;
-  Unit?: string;
-  Price?: number;
   Brand_ID: { Brand_Name: string };
   Product_ID: {
     Product_Name: string;
-    Category_ID?: { Category_Name: string };
   };
 }
 
@@ -48,7 +40,9 @@ interface BranchProduct {
 
 interface BranchStock {
   _id: string;
-  Branch_Product_ID: string;
+  Branch_Product_ID: {
+    _id: string; //  populated object
+  };
   Quantity: number;
 }
 
@@ -60,10 +54,7 @@ const StoreManagerStocks = () => {
   const [loading, setLoading] = useState(false);
   const [enableModalOpen, setEnableModalOpen] = useState(false);
 
-
-  /* -----------------------------
-     Load all branch products & stock
-  ----------------------------- */
+  /* Load branch products & stock */
   const loadData = async () => {
     setLoading(true);
     try {
@@ -74,15 +65,17 @@ const StoreManagerStocks = () => {
 
       setProducts(productsRes);
 
-      // Build map: branchProductId -> quantity
+      //  map by Branch_Product_ID._id
       const map: Record<string, number> = {};
+
       stockRes.forEach((s: BranchStock) => {
-        map[s.Branch_Product_ID] = s.Quantity;
+        map[s.Branch_Product_ID._id] = s.Quantity;
       });
+
       setStockMap(map);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to load data:", err);
-      alert("Failed to load products or stock. Please try again.");
+      alert("Failed to load products or stock");
     } finally {
       setLoading(false);
     }
@@ -92,50 +85,38 @@ const StoreManagerStocks = () => {
     loadData();
   }, []);
 
-  /* -----------------------------
-     Filtered products by search
-  ----------------------------- */
+  /*       Search filter           */
   const filteredProducts = useMemo(() => {
     return products.filter((p) =>
-      `${p.Product_Variant_ID.Product_ID.Product_Name} ${p.Product_Variant_ID.Brand_ID.Brand_Name} ${p.Product_Variant_ID.SKU}`
+      `${p.Product_Variant_ID.Product_ID.Product_Name}
+       ${p.Product_Variant_ID.Brand_ID.Brand_Name}
+       ${p.Product_Variant_ID.SKU}`
         .toLowerCase()
         .includes(search.toLowerCase())
     );
   }, [products, search]);
 
-  const productsWithStock = filteredProducts.filter(
-    (p) => stockMap[p._id] !== undefined && stockMap[p._id] > 0
-  );
-  const productsWithoutStock = filteredProducts.filter(
-    (p) => stockMap[p._id] === undefined
-  );
+  /*   Stock-based separation    */
+  const productsWithStock = useMemo(() => {
+    return filteredProducts.filter(
+      (p) => stockMap[p._id] !== undefined && stockMap[p._id] > 0
+    );
+  }, [filteredProducts, stockMap]);
 
-  /* -----------------------------
-     Enable a product for branch
-  ----------------------------- */
-  const enableProduct = async () => {
-    const productVariantId = prompt("Enter Product Variant ID to enable");
-    if (!productVariantId) return;
+  const productsWithoutStock = useMemo(() => {
+    return filteredProducts.filter(
+      (p) => stockMap[p._id] === undefined
+    );
+  }, [filteredProducts, stockMap]);
 
-    try {
-      await createBranchProduct({ Product_Variant_ID: productVariantId });
-      await loadData();
-    } catch (err: any) {
-      console.error("Failed to enable product:", err);
-      alert(err?.message || "Failed to enable product");
-    }
-  };
-
-  /* -----------------------------
-     Update stock manually
-  ----------------------------- */
+  /* Update stock manually */
   const updateStock = async (branchProductId: string) => {
     const quantityStr = prompt("Enter new quantity");
     if (!quantityStr) return;
 
-    const quantity = parseInt(quantityStr);
+    const quantity = Number(quantityStr);
     if (isNaN(quantity) || quantity < 0) {
-      alert("Invalid number");
+      alert("Invalid quantity");
       return;
     }
 
@@ -143,14 +124,11 @@ const StoreManagerStocks = () => {
       await updateBranchStock(branchProductId, quantity, branchId);
       await loadData();
     } catch (err: any) {
-      console.error("Failed to update stock:", err);
-      alert(err?.message || "Failed to update stock");
+      alert(err.message || "Failed to update stock");
     }
   };
 
-  /* -----------------------------
-     Render
-  ----------------------------- */
+  /*           Render           */
   return (
     <Box sx={{ p: 6 }}>
       {/* Header */}
@@ -158,6 +136,7 @@ const StoreManagerStocks = () => {
         <Typography variant="h4" fontWeight="bold">
           Branch Stocks
         </Typography>
+
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -166,13 +145,13 @@ const StoreManagerStocks = () => {
         >
           Enable Product
         </Button>
+
         <EnableProductModal
           open={enableModalOpen}
           onClose={() => setEnableModalOpen(false)}
-          onSuccess={loadData} // reload products after enabling
+          onSuccess={loadData}
           branchId={branchId}
         />
-
       </Box>
 
       {/* Search */}
@@ -184,10 +163,11 @@ const StoreManagerStocks = () => {
         sx={{ mb: 4, width: 350 }}
       />
 
-      {/* Products With Stock */}
+      {/* Products WITH stock */}
       <Typography variant="h6" fontWeight="bold" mb={1}>
         Products With Stock
       </Typography>
+
       <Paper sx={{ mb: 4 }}>
         <Table>
           <TableHead>
@@ -199,6 +179,7 @@ const StoreManagerStocks = () => {
               <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {productsWithStock.length === 0 && (
               <TableRow>
@@ -207,12 +188,19 @@ const StoreManagerStocks = () => {
                 </TableCell>
               </TableRow>
             )}
+
             {productsWithStock.map((p) => (
               <TableRow key={p._id}>
-                <TableCell>{p.Product_Variant_ID.Product_ID.Product_Name}</TableCell>
-                <TableCell>{p.Product_Variant_ID.Brand_ID.Brand_Name}</TableCell>
+                <TableCell>
+                  {p.Product_Variant_ID.Product_ID.Product_Name}
+                </TableCell>
+                <TableCell>
+                  {p.Product_Variant_ID.Brand_ID.Brand_Name}
+                </TableCell>
                 <TableCell>{p.Product_Variant_ID.SKU}</TableCell>
-                <TableCell align="right">{stockMap[p._id]}</TableCell>
+                <TableCell align="right">
+                  {stockMap[p._id]}
+                </TableCell>
                 <TableCell align="right">
                   <Button
                     size="small"
@@ -230,34 +218,39 @@ const StoreManagerStocks = () => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* Products Without Stock */}
+      {/* Products WITHOUT stock */}
       <Typography variant="h6" fontWeight="bold" mb={1}>
         Enabled Products (No Stock Yet)
       </Typography>
+
       <Paper>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Branch Product ID</TableCell>
               <TableCell>Product</TableCell>
               <TableCell>Brand</TableCell>
               <TableCell>SKU</TableCell>
               <TableCell>Status</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {productsWithoutStock.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={4} align="center">
                   All enabled products have stock
                 </TableCell>
               </TableRow>
             )}
+
             {productsWithoutStock.map((p) => (
               <TableRow key={p._id}>
-                <TableCell>{p._id}</TableCell>
-                <TableCell>{p.Product_Variant_ID.Product_ID.Product_Name}</TableCell>
-                <TableCell>{p.Product_Variant_ID.Brand_ID.Brand_Name}</TableCell>
+                <TableCell>
+                  {p.Product_Variant_ID.Product_ID.Product_Name}
+                </TableCell>
+                <TableCell>
+                  {p.Product_Variant_ID.Brand_ID.Brand_Name}
+                </TableCell>
                 <TableCell>{p.Product_Variant_ID.SKU}</TableCell>
                 <TableCell>
                   <Chip label="No Stock" color="warning" size="small" />
