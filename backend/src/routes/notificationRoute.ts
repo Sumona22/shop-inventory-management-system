@@ -16,7 +16,7 @@ const router = Router();
 
 // Get all notifications
 router.get(
-  "/",
+  "/my",
   protect,
   getMyNotifications
 );
