@@ -10,6 +10,7 @@ import {
   Box,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 import type { ProductVariant } from "../types/productVariantTypes";
 
@@ -20,16 +21,11 @@ interface Props {
 
 const ProductVariantTable: React.FC<Props> = ({ data, loading }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
 
-  /* ================= LOADING STATE ================= */
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight={200}
-      >
+      <Box display="flex" justifyContent="center" minHeight={200}>
         <CircularProgress />
       </Box>
     );
@@ -40,41 +36,48 @@ const ProductVariantTable: React.FC<Props> = ({ data, loading }) => {
       <TableContainer>
         <Table>
 
-          {/* ================= TABLE HEADER ================= */}
+          {/* TABLE HEADER */}
           <TableHead>
-            <TableRow
-              sx={{
-                bgcolor: theme.palette.primary.main,
-              }}
-            >
-              <TableCell sx={{ color: theme.palette.primary.contrastText }}>
+            <TableRow sx={{ bgcolor: theme.palette.primary.main }}>
+              <TableCell sx={{ color: "#fff" }}>
+                <strong>Category</strong>
+              </TableCell>
+              <TableCell sx={{ color: "#fff" }}>
                 <strong>Product</strong>
               </TableCell>
-              <TableCell sx={{ color: theme.palette.primary.contrastText }}>
+              <TableCell sx={{ color: "#fff" }}>
                 <strong>Brand</strong>
               </TableCell>
-              <TableCell sx={{ color: theme.palette.primary.contrastText }}>
+              <TableCell sx={{ color: "#fff" }}>
                 <strong>Variant</strong>
               </TableCell>
-              <TableCell sx={{ color: theme.palette.primary.contrastText }}>
+              <TableCell sx={{ color: "#fff" }}>
                 <strong>Pack</strong>
               </TableCell>
-              <TableCell sx={{ color: theme.palette.primary.contrastText }}>
+              <TableCell sx={{ color: "#fff" }}>
                 <strong>Price</strong>
               </TableCell>
             </TableRow>
           </TableHead>
 
-          {/* ================= TABLE BODY ================= */}
+          {/* TABLE BODY */}
           <TableBody>
             {data.map((v) => (
               <TableRow
                 key={v._id}
                 hover
                 sx={{
-                  "&:last-child td, &:last-child th": { border: 0 },
+                  cursor: "pointer",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
+                onClick={() =>
+                  navigate(`/dashboard/admin/product-variants/${v._id}`)
+                }
               >
+                <TableCell>
+                  {v.Product_ID?.Category_ID?.Category_Name ?? "—"}
+                </TableCell>
+
                 <TableCell>
                   {v.Product_ID?.Product_Name ?? "—"}
                 </TableCell>
@@ -95,7 +98,6 @@ const ProductVariantTable: React.FC<Props> = ({ data, loading }) => {
               </TableRow>
             ))}
 
-            {/* ================= EMPTY STATE ================= */}
             {data.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} align="center">

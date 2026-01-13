@@ -29,6 +29,7 @@ interface Brand {
 
 interface Props {
   onApply: (filters: {
+    categoryId?: string;
     productId?: string;
     brandId?: string;
   }) => void;
@@ -43,13 +44,13 @@ const ProductVariantFilters = ({ onApply }: Props) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [brand, setBrand] = useState<Brand | null>(null);
 
-  /* ================= LOAD BASE DATA ================= */
+  /* LOAD BASE DATA */
   useEffect(() => {
     fetchCategories().then((res) => setCategories(res.data));
     fetchBrands().then((res) => setBrands(res.data));
   }, []);
 
-  /* ================= LOAD PRODUCTS BY CATEGORY ================= */
+  /* LOAD PRODUCTS BY CATEGORY */
   useEffect(() => {
     if (!category) {
       setProducts([]);
@@ -83,7 +84,7 @@ const ProductVariantFilters = ({ onApply }: Props) => {
             )}
           />
 
-          {/* PRODUCT (FILTERED BY CATEGORY) */}
+          {/* PRODUCT */}
           <Autocomplete
             options={products}
             value={product}
@@ -114,13 +115,14 @@ const ProductVariantFilters = ({ onApply }: Props) => {
           />
         </Stack>
 
-        {/* APPLY FILTERS */}
+        {/* APPLY */}
         <Button
           variant="contained"
           size="large"
           sx={{ height: 52, px: 4, fontWeight: 600 }}
           onClick={() =>
             onApply({
+              categoryId: category?._id,
               productId: product?._id,
               brandId: brand?._id,
             })

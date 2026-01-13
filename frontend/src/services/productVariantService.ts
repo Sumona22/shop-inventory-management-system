@@ -2,6 +2,7 @@ import { api } from "../api/api";
 
 /* Fetch product variants (filterable) */
 export const fetchProductVariants = async (filters?: {
+  categoryId?: string;
   productId?: string;
   brandId?: string;
 }) => {
@@ -15,6 +16,19 @@ export const fetchProductVariants = async (filters?: {
     },
   });
 };
+
+/* Fetch single product variant by ID */
+export const fetchProductVariantById = async (variantId: string) => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
+
+  return api.get(`/products/variants/${variantId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
 
 /* Create product variant (Admin only) */
 export const createProductVariant = async (payload: {

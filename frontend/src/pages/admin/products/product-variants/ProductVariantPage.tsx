@@ -14,26 +14,39 @@ const ProductVariantsPage = () => {
   const [openModal, setOpenModal] = useState(false);
 
   const [filters, setFilters] = useState<{
+    categoryId?: string;
     productId?: string;
     brandId?: string;
   }>({});
 
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState("");
 
-  const loadVariants = async (nextFilters = filters, nextSearch = search) => {
+  const loadVariants = async (
+    nextFilters = filters,
+    nextSearch = search
+  ) => {
     try {
       setLoading(true);
+
       const res = await fetchProductVariants(nextFilters);
 
-      // CLIENT-SIDE SEARCH: filter based on SKU, Product_Name, Brand_Name
-      const filteredData = res.data.filter((v: ProductVariant) => {
-        const searchLower = nextSearch.toLowerCase();
+      const searchLower = nextSearch.toLowerCase();
+
+      const filtered = res.data.filter((v: ProductVariant) => {
+        const sku = v.SKU?.toLowerCase() || "";
+        const product =
+          v.Product_ID?.Product_Name?.toLowerCase() || "";
+        const brand =
+          v.Brand_ID?.Brand_Name?.toLowerCase() || "";
+
         return (
-          v.SKU.toLowerCase().includes(searchLower)
-        )
+          sku.includes(searchLower) ||
+          product.includes(searchLower) ||
+          brand.includes(searchLower)
+        );
       });
 
-      setVariants(filteredData);
+      setVariants(filtered);
       setFilters(nextFilters);
       setSearch(nextSearch);
     } finally {
@@ -49,7 +62,7 @@ const ProductVariantsPage = () => {
     <div className="space-y-6">
       <ProductVariantToolbar
         onAdd={() => setOpenModal(true)}
-        onSearch={(value) => loadVariants(filters, value || "")}
+        onSearch={(value) => loadVariants(filters, value)}
       />
 
       <ProductVariantFilters
@@ -61,7 +74,7 @@ const ProductVariantsPage = () => {
       <AddProductVariantModal
         open={openModal}
         onClose={() => setOpenModal(false)}
-        onSuccess={() => loadVariants()}
+        onSuccess={() => loadVariants(filters, search)}
       />
     </div>
   );
