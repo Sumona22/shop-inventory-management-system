@@ -76,8 +76,12 @@ const UpdateStockModal = ({ open, onClose }: Props) => {
 
       onClose();
     } catch (err: any) {
-      alert(err.message);
-    }
+  const msg =
+    err.response?.data?.message ||
+    "Batch already exists for this product.";
+
+  alert(msg);
+}
   };
 
   return (

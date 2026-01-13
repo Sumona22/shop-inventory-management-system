@@ -7,10 +7,6 @@ import { incrementBranchStock } from "../../utils/updateBranchStock";
 
 /* ===================== CREATE BATCH (StoreStaff) ===================== */
 export const createBatch = async (req: any, res: Response) => {
-  if (req.user.Role !== "StoreStaff") {
-    return res.status(403).json({ message: "Only store staff can create batches" });
-  }
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -29,7 +25,9 @@ export const createBatch = async (req: any, res: Response) => {
     }).session(session);
 
     if (!branchProduct) {
-      return res.status(404).json({ message: "Branch product not found or inactive" });
+      return res
+        .status(404)
+        .json({ message: "Branch product not found or inactive" });
     }
 
     const productVariant = await ProductVariant.findOne({
@@ -39,7 +37,9 @@ export const createBatch = async (req: any, res: Response) => {
     });
 
     if (!productVariant) {
-      return res.status(400).json({ message: "Batch tracking not enabled for this SKU" });
+      return res
+        .status(400)
+        .json({ message: "Batch tracking not enabled for this SKU" });
     }
 
     const lastBatch = await Batch.findOne({
@@ -50,19 +50,24 @@ export const createBatch = async (req: any, res: Response) => {
       .session(session);
 
     const nextBatchNo = lastBatch ? lastBatch.Batch_No + 1 : 1;
-    const batchCode = `B-${productVariant.SKU_Normalized}-${nextBatchNo}`;
+
+    /* ✅ SAFE SKU CODE (FIXES 500 ERROR) */
+    const skuCode = productVariant.SKU_Normalized || productVariant.SKU;
+    const batchCode = `B-${skuCode}-${nextBatchNo}`;
 
     const [batch] = await Batch.create(
-      [{
-        Business_ID: req.user.Business_ID,
-        Branch_ID: req.user.Branch_ID,
-        Branch_Product_ID,
-        Batch_No: nextBatchNo,
-        Batch_Code: batchCode,
-        Mfg_Date,
-        Exp_Date,
-        Quantity,
-      }],
+      [
+        {
+          Business_ID: req.user.Business_ID,
+          Branch_ID: req.user.Branch_ID,
+          Branch_Product_ID,
+          Batch_No: nextBatchNo,
+          Batch_Code: batchCode,
+          Mfg_Date,
+          Exp_Date,
+          Quantity,
+        },
+      ],
       { session }
     );
 
@@ -77,13 +82,25 @@ export const createBatch = async (req: any, res: Response) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json({ message: "Batch created", Batch_ID: batch._id });
+    return res.status(201).json({
+      message: "Batch created successfully",
+      Batch_ID: batch._id,
+    });
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-    res.status(500).json({ message: err.message });
+
+    /* ✅ DUPLICATE BATCH SAFETY */
+    if (err.code === 11000) {
+      return res.status(409).json({
+        message: "Duplicate batch detected. Please retry.",
+      });
+    }
+
+    return res.status(500).json({ message: err.message });
   }
 };
+
 
 
 const allowedViewRoles = ["StoreManager", "StoreStaff", "Cashier"];
@@ -106,7 +123,7 @@ const batchPopulate = {
 
 /* Fetch all batches for logged-in branch */
 export const getBatchesByBranch = async (req: any, res: Response) => {
-  if (!allowedViewRoles.includes(req.user.Role)) {
+  if (!allowedViewRoles.includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
@@ -120,7 +137,7 @@ export const getBatchesByBranch = async (req: any, res: Response) => {
 
 /* Fetch batches by BranchProduct */
 export const getBatchesByBranchProduct = async (req: any, res: Response) => {
-  if (!allowedViewRoles.includes(req.user.Role)) {
+  if (!allowedViewRoles.includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
@@ -134,7 +151,7 @@ export const getBatchesByBranchProduct = async (req: any, res: Response) => {
 };
 
 export const getBatchesBySKU = async (req: any, res: Response) => {
-  if (!["StoreManager", "StoreStaff", "Cashier"].includes(req.user.Role)) {
+  if (!["StoreManager", "StoreStaff", "Cashier"].includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
