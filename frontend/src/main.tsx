@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import { NotificationProvider } from "./context/NotificationContext";
 
 const Root = () => {
   // Load saved mode or default to light
@@ -40,11 +41,14 @@ const Root = () => {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <NotificationProvider>
       <App toggleMode={toggleMode} mode={mode} />
-    </ThemeProvider>
-  );
+    </NotificationProvider>
+  </ThemeProvider>
+);
+
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
