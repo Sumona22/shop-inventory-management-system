@@ -12,7 +12,7 @@ import {
 export const adminMenu = [
   { label: "Home", path: "/dashboard/admin", icon: <Home /> },
   { label: "Branches", path: "/dashboard/admin/branches", icon: <Store /> },
-  { label: "Products", path: "/dashboard/admin/products", icon: <Inventory2 /> },
+  { label: "Products", icon: <Inventory2 />, path: "/dashboard/admin/product-variants", },
   { label: "Stock Alerts", path: "/dashboard/admin/alerts", icon: <Notifications /> },
   { label: "Order Requests", path: "/dashboard/admin/order-requests", icon: <Chat /> },
   { label: "Orders", path: "/dashboard/admin/suppliers", icon: <ShoppingCart /> },
