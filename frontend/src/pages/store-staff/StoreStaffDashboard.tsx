@@ -18,7 +18,7 @@ import {
   NotificationsActive,
 } from "@mui/icons-material";
 
-const StoreManagerDashboard: React.FC = () => {
+const StoreStaffDashboard: React.FC = () => {
   const [openStock, setOpenStock] = useState(false);
 
   return (
@@ -42,7 +42,7 @@ const StoreManagerDashboard: React.FC = () => {
             fontWeight: "bold",
           }}
         >
-          Store Manager Panel
+          Store Staff Panel
         </Typography>
 
         {/* Divider after header */}
@@ -126,4 +126,4 @@ const StoreManagerDashboard: React.FC = () => {
   );
 };
 
-export default StoreManagerDashboard;
+export default StoreStaffDashboard;

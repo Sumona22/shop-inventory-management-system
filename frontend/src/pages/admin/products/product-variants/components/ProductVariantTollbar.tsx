@@ -36,7 +36,7 @@ const ProductVariantToolbar = ({ onAdd, onSearch }: Props) => {
       <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
         <TextField
           size="small"
-          placeholder="Search SKU / Product / Brand"
+          placeholder="Search Variants"
           onChange={(e) => onSearch(e.target.value)}
           sx={{ width: 260 }}
           InputProps={{

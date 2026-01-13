@@ -6,6 +6,7 @@ import {
   Notifications,
   AddShoppingCart,
   ListAlt,
+  Inventory,
 } from "@mui/icons-material";
 
 /* ================= Store Manager Menu ================= */
@@ -20,6 +21,12 @@ export const storeManagerMenu = [
     path: "/dashboard/store-manager/staff",
     icon: <People />,
   },
+  {
+    label: "Stocks",
+    path: "/dashboard/store-manager/stocks",
+    icon: <Inventory />,
+  },
+
   {
     label: "Sales Records",
     path: "/dashboard/store-manager/sales",

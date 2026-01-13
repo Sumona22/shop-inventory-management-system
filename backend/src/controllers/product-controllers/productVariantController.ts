@@ -77,16 +77,50 @@ export const getProductVariants = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const filter: any = { Business_ID: requester.Business_ID };
+    const filter: any = {
+      Business_ID: requester.Business_ID,
+    };
 
-    if (req.query.productId) filter.Product_ID = req.query.productId;
-    if (req.query.brandId) filter.Brand_ID = req.query.brandId;
+    /* ===== FILTER BY CATEGORY ===== */
+    if (req.query.categoryId) {
+      const products = await Product.find(
+        {
+          Business_ID: requester.Business_ID,
+          Category_ID: req.query.categoryId,
+        },
+        { _id: 1 }
+      );
 
-    const productVariants = await ProductVariant.find(filter)
-      .populate("Product_ID", "Product_Name")
+      const productIds = products.map((p) => p._id);
+
+      // No products → no variants
+      if (productIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      filter.Product_ID = { $in: productIds };
+    }
+
+    if (req.query.productId) {
+      filter.Product_ID = req.query.productId;
+    }
+
+    if (req.query.brandId) {
+      filter.Brand_ID = req.query.brandId;
+    }
+
+    const variants = await ProductVariant.find(filter)
+      .populate({
+        path: "Product_ID",
+        select: "Product_Name Category_ID",
+        populate: {
+          path: "Category_ID",
+          select: "Category_Name",
+        },
+      })
       .populate("Brand_ID", "Brand_Name");
 
-    res.status(200).json(productVariants);
+    res.status(200).json(variants);
   } catch (err: any) {
     res.status(500).json({
       message: "Failed to fetch variants",
@@ -94,6 +128,51 @@ export const getProductVariants = async (req: Request, res: Response) => {
     });
   }
 };
+
+/* Get Single Product Variant By ID */
+export const getProductVariantById = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { variantId } = req.params;
+
+    const requester = await User.findById((req as any).user.id);
+    if (!requester) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const variant = await ProductVariant.findOne({
+      _id: variantId,
+      Business_ID: requester.Business_ID,
+    })
+      .populate({
+        path: "Product_ID",
+        select: "Product_Name Category_ID",
+        populate: {
+          path: "Category_ID",
+          select: "Category_Name",
+        },
+      })
+      .populate("Brand_ID", "Brand_Name");
+
+    if (!variant) {
+      return res.status(404).json({
+        message: "Product variant not found",
+      });
+    }
+
+    res.status(200).json(variant);
+  } catch (err: any) {
+    res.status(500).json({
+      message: "Failed to fetch product variant",
+      error: err.message,
+    });
+  }
+};
+
+
+
 
 /* Update Product Variant */
 export const updateProductVariant = async (req: Request, res: Response) => {
