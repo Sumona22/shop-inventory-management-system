@@ -1,6 +1,12 @@
+export interface CategoryRef {
+  _id: string;
+  Category_Name: string;
+}
+
 export interface ProductRef {
   _id: string;
   Product_Name: string;
+  Category_ID?: CategoryRef;
 }
 
 export interface BrandRef {
