@@ -9,7 +9,8 @@ import {
 
 const router = express.Router();
 
-/* Store Staff creates batch */
+/* ================= CREATE BATCH ================= */
+/* Store Staff only */
 router.post(
   "/",
   protect,
@@ -17,7 +18,8 @@ router.post(
   createBatch
 );
 
-/* Get all batches by Branch ID */
+/* ================= GET BATCHES FOR BRANCH ================= */
+/* StoreStaff, StoreManager, Cashier */
 router.get(
   "/branch",
   protect,
@@ -25,8 +27,7 @@ router.get(
   getBatchesByBranch
 );
 
-
-/* Get batch by ID */
+/* ================= GET BATCH BY ID ================= */
 router.get(
   "/:batchId",
   protect,
@@ -34,13 +35,13 @@ router.get(
   getBatchById
 );
 
-/* Update batch (status, expiry) */
+/* ================= UPDATE BATCH ================= */
+/* StoreStaff, StoreManager */
 router.put(
   "/:batchId",
   protect,
   authorize("StoreStaff", "StoreManager"),
   updateBatch
 );
-
 
 export default router;

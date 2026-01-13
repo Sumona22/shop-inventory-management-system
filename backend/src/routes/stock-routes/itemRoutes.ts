@@ -1,10 +1,16 @@
 import express from "express";
 import { protect, authorize } from "../../middleware/authMiddleware";
-import { createItem, getItemById, getItemsByBranch, updateItem } from "../../controllers/stock-controllers/itemController";
+import {
+  createItem,
+  getItemById,
+  getItemsByBranch,
+  updateItem,
+} from "../../controllers/stock-controllers/itemController";
 
 const router = express.Router();
 
-/* Store Staff adds item */
+/* ================= CREATE ITEM ================= */
+/* Store Staff only */
 router.post(
   "/",
   protect,
@@ -12,30 +18,29 @@ router.post(
   createItem
 );
 
-/*Get Items of a specific Branch */
-
+/* ================= GET ITEMS (Branch) ================= */
+/* StoreStaff, StoreManager, Cashier */
 router.get(
   "/",
   protect,
-  authorize("StoreStaff", "Manager", "Admin"),
+  authorize("StoreStaff", "StoreManager", "Cashier"),
   getItemsByBranch
 );
 
-/* Get Item by ID */
-
+/* ================= GET ITEM BY ID ================= */
 router.get(
   "/:id",
   protect,
-  authorize("StoreStaff", "Manager", "Admin"),
+  authorize("StoreStaff", "StoreManager", "Cashier"),
   getItemById
 );
 
-/* Update Items */
-
+/* ================= UPDATE ITEM ================= */
+/* StoreStaff, StoreManager */
 router.put(
   "/:id",
   protect,
-  authorize("StoreStaff", "Manager"),
+  authorize("StoreStaff", "StoreManager"),
   updateItem
 );
 

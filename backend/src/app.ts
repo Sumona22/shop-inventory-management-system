@@ -13,8 +13,7 @@ import orderRequestRoutes from "./routes/orderRequestRoute";
 import stockRoutes from "./routes/stock-routes";
 import notificationRoutes from "./routes/notificationRoute";
 import salesRoutes from "./routes/salesRoutes"; 
-import productVariantRoutes from "./routes/product-routes";
-import batchRoutes from "./routes/stock-routes/batchRoutes";
+
 
 dotenv.config();
 
