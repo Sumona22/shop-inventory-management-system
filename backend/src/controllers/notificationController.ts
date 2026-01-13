@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Notification from "../models/Notification";
+import Notification, { NotificationType } from "../models/Notification";
 import mongoose from "mongoose";
 /* =====================================
    GET MY NOTIFICATIONS
@@ -10,10 +10,28 @@ export const getMyNotifications = async (req: Request, res: Response) => {
 
     const userId = user._id || user.id;
 
-    const notifications = await Notification.find({
-      User_ID: new mongoose.Types.ObjectId(userId)
-    }).sort({ createdAt: -1 });
+    const userRole = user.role;
 
+    const filter: any = {
+      User_ID: new mongoose.Types.ObjectId(userId)
+    };
+
+    // 🔐 Admin should see ONLY new order requests
+    if (userRole === "Admin") {
+      filter.Type = NotificationType.NEW_ORDER_REQUEST;
+    }
+    if (userRole === "StoreManager") {
+    filter.Type = {
+      $in: [
+        NotificationType.ORDER_APPROVED,
+        NotificationType.ORDER_MODIFIED,
+        NotificationType.ORDER_REJECTED,
+        NotificationType.STOCK_NOT_AVAILABLE // ✅ ADDED
+      ]
+    };
+  }
+    const notifications = await Notification.find(filter)
+      .sort({ createdAt: -1 });
 
     res.json({
       data: notifications
@@ -32,11 +50,32 @@ export const getMyNotifications = async (req: Request, res: Response) => {
 export const getUnreadNotificationCount = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
+    const userRole = user.role; 
+    const userObjectId = new mongoose.Types.ObjectId(user._id);
+    const filter: any = {
+      User_ID: userObjectId,
+      Is_Read: false
+    };
+    if (userRole === "Admin") {
+      filter.Type = NotificationType.NEW_ORDER_REQUEST;
+    }
+
+    if (userRole === "StoreManager") {
+      filter.Type = {
+        $in: [
+          NotificationType.ORDER_APPROVED,
+          NotificationType.ORDER_MODIFIED,
+          NotificationType.ORDER_REJECTED,
+          NotificationType.STOCK_NOT_AVAILABLE // ✅ ADDED
+        ]
+      };
+    }
 
     const count = await Notification.countDocuments({
-      User_ID: user._id,
+      User_ID: userObjectId,
       Is_Read: false
     });
+
 
     res.json({
       unreadCount: count
@@ -57,14 +96,14 @@ export const markNotificationAsRead = async (req: Request, res: Response) => {
     const user = (req as any).user;
     const { id } = req.params;
 
+    const userObjectId = new mongoose.Types.ObjectId(user._id);
+
     const notification = await Notification.findOneAndUpdate(
       {
         _id: id,
-        User_ID:  user._id
+        User_ID: userObjectId
       },
-      {
-        Is_Read: true
-      },
+      { Is_Read: true },
       { new: true }
     );
 
@@ -93,16 +132,15 @@ export const markAllAsRead = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
 
+    const userObjectId = new mongoose.Types.ObjectId(user._id);
+
     await Notification.updateMany(
       {
-        User_ID: user._id,
+        User_ID: userObjectId,
         Is_Read: false
       },
-      {
-        Is_Read: true
-      }
+      { Is_Read: true }
     );
-
     res.json({
       message: "All notifications marked as read"
     });
