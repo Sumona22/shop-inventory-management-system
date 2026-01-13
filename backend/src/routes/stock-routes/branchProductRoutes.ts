@@ -3,6 +3,7 @@ import { protect, authorize } from "../../middleware/authMiddleware";
 import {
   createBranchProduct,
   getBranchProducts,
+  getBranchProductsByBranch,
   updateBranchProduct,
 } from "../../controllers/stock-controllers/branchProductController";
 
@@ -31,5 +32,14 @@ router.put(
   authorize("StoreManager"),
   updateBranchProduct
 );
+
+/* Get branch products by branchId (Store Manager stock screen) */
+router.get(
+  "/branch/:branchId",
+  protect,
+  authorize("Admin", "StoreManager", "StoreStaff","Cashier"),
+  getBranchProductsByBranch
+);
+
 
 export default router;
