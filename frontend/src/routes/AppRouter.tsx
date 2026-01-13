@@ -45,6 +45,9 @@ import OrderRequestDetails from "../pages/store-manager/orders/OrderRequestDetai
 import StoreStaffDashboard from "../pages/store-staff/StoreStaffDashboard";
 import CashierDashboard from "../pages/cashier/CashierDashboard";
 import CashierSalesPage from "../pages/cashier/sales/CashierSalesPage";
+import StoreStaffLayout from "../layouts/StoreStaffLayout";
+import StockAlertsPage from "../pages/store-staff/StockAlertsPage";
+import StockPage from "../pages/store-staff/stock/StockPage";
 
 
 /* ---------- App Router ---------- */
@@ -174,6 +177,21 @@ const AppRouter = () => {
   <Route path="/dashboard/store-manager/stocks" element={<StoreManagerStocks />}/>
 
 </Route>
+
+/* ---------- STORE STAFF ---------- */
+<Route
+  path="/dashboard/store-staff"
+  element={
+    <ProtectedRoute role="StoreStaff">
+      <StoreStaffLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<StoreStaffDashboard />} />
+  <Route path="stocks" element={<StockPage />} />
+  <Route path="alerts" element={<StockAlertsPage />} />
+</Route>
+
     </Routes>
   );
 };
