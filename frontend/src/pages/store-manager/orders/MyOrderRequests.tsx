@@ -21,26 +21,31 @@ const STATUS_CONFIG: Record<string, {
   label: string;
   color: "default" | "info" | "warning" | "success" | "error";
 }> = {
-  PENDING: {
-    label: "Pending Admin Review",
-    color: "warning",
-  },
-  MODIFIED_BY_ADMIN: {
-    label: "Modified by Admin",
-    color: "info",
-  },
-  APPROVED: {
-    label: "Approved",
-    color: "success",
-  },
-  REJECTED: {
-    label: "Rejected",
-    color: "error",
-  },
-  WAITING_FOR_AVAILABILITY: {
-    label: "Waiting for Stock",
-    color: "default",
-  },
+  CREATED: {
+  label: "Submitted",
+  color: "default"
+},
+UNDER_ADMIN_REVIEW: {
+  label: "Under Admin Review",
+  color: "warning"
+},
+MODIFIED_BY_ADMIN: {
+  label: "Modified by Admin",
+  color: "info"
+},
+WAITING_FOR_AVAILABILITY: {
+  label: "Waiting for Stock",
+  color: "default"
+},
+APPROVED: {
+  label: "Approved",
+  color: "success"
+},
+REJECTED: {
+  label: "Rejected",
+  color: "error"
+}
+
 };
 
 export default function MyOrderRequests() {
@@ -61,9 +66,15 @@ export default function MyOrderRequests() {
     const count = (status: string) =>
       orders.filter(o => o.Status === status).length;
 
+    const pendingCount = orders.filter(
+  o =>
+    o.Status === "CREATED" ||
+    o.Status === "UNDER_ADMIN_REVIEW"
+).length;
+
     return {
       total: orders.length,
-      pending: count("PENDING"),
+      pending: pendingCount,
       modified: count("MODIFIED_BY_ADMIN"),
       approved: count("APPROVED"),
       rejected: count("REJECTED"),

@@ -45,6 +45,7 @@ import OrderRequestDetails from "../pages/store-manager/orders/OrderRequestDetai
 import StoreStaffDashboard from "../pages/store-staff/StoreStaffDashboard";
 import CashierDashboard from "../pages/cashier/CashierDashboard";
 import CashierSalesPage from "../pages/cashier/sales/CashierSalesPage";
+import CashierLayout from "../layouts/CashierLayout";
 
 
 /* ---------- App Router ---------- */
@@ -106,14 +107,16 @@ const AppRouter = () => {
 
       {/* ---------- CASHIER ---------- */}
       <Route
-        path="/dashboard/cashier"
-        element={
-          <ProtectedRoute role="Cashier">
-            <CashierDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="sales" element={<CashierSalesPage />} />
+  path="/dashboard/cashier"
+  element={
+    <ProtectedRoute role="Cashier">
+      <CashierLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route index element={<CashierDashboard />} />
+  <Route path="sales" element={<CashierSalesPage />} />
+</Route>
 
 
 

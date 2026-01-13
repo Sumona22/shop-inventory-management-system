@@ -11,10 +11,14 @@ import { NotificationType } from "../../models/Notification";
 export const getAllOrderRequests = async (req: Request, res: Response) => {
   try {
     const { Branch_ID, Status, search } = req.query;
-    const filter: any = {};
+
+    const filter: any = {
+      Business_ID: (req as any).user.Business_ID, // ✅ IMPORTANT FIX
+    };
 
     if (Branch_ID) filter.Branch_ID = Branch_ID;
     if (Status) filter.Status = Status;
+
     if (search) {
       filter.Order_Request_Number = { $regex: search, $options: "i" };
     }
@@ -28,7 +32,10 @@ export const getAllOrderRequests = async (req: Request, res: Response) => {
     res.json({ data: orders });
 
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch order requests", error });
+    res.status(500).json({
+      message: "Failed to fetch order requests",
+      error,
+    });
   }
 };
 

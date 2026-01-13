@@ -29,7 +29,7 @@ router.get(
 router.get(
   "/:categoryId",
   protect,
-  authorize("Admin", "StoreManager"),
+  authorize("Admin", "StoreManager", "StoreStaff", "Cashier"),
   getCategoryById
 );
 
