@@ -3,6 +3,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import AppRouter from "./routes/AppRouter";
 import { AuthProvider } from "./context/AuthContext";
 import NavBar from "./components/NavBar";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { NotificationProvider } from "./context/NotificationContext";
 
 interface AppProps {
   toggleMode: () => void;
@@ -12,11 +15,17 @@ interface AppProps {
 const App: React.FC<AppProps> = ({ toggleMode, mode }) => {
   return (
     <AuthProvider>
-      <Router>
-        <NavBar toggleMode={toggleMode} mode={mode} />
-        <AppRouter />
-      </Router>
+      <NotificationProvider>
+        <Router>
+          {/* 🔔 Toasts (GLOBAL) */}
+          <ToastContainer position="top-right" autoClose={4000} />
+
+          <NavBar toggleMode={toggleMode} mode={mode} />
+          <AppRouter />
+        </Router>
+      </NotificationProvider>
     </AuthProvider>
+
   );
 };
 

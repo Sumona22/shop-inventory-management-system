@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Notification from "../models/Notification";
 import { NotificationType } from "../models/Notification";
+import { io } from "../server";
 
 interface NotificationPayload {
   userId: string;
@@ -14,7 +15,7 @@ interface NotificationPayload {
 
 export const createNotification = async (payload: NotificationPayload) => {
   try {
-    return await Notification.create({
+    const notification = await Notification.create({
       User_ID: new mongoose.Types.ObjectId(payload.userId),
       Sender_ID: payload.senderId
         ? new mongoose.Types.ObjectId(payload.senderId)
@@ -27,6 +28,12 @@ export const createNotification = async (payload: NotificationPayload) => {
         : undefined,
       Meta: payload.meta
     });
+
+    /* 🔔 REAL-TIME EMIT */
+    io.to(payload.userId).emit("new-notification", notification);
+
+    return notification;
+
   } catch (error) {
     console.error("Notification create failed:", error);
     return null;
@@ -39,7 +46,7 @@ export const createBulkNotifications = async (
   try {
     if (!payloads.length) return;
 
-    return await Notification.insertMany(
+    const notifications = await Notification.insertMany(
       payloads.map(p => ({
         User_ID: new mongoose.Types.ObjectId(p.userId),
         Sender_ID: p.senderId
@@ -54,6 +61,17 @@ export const createBulkNotifications = async (
         Meta: p.meta
       }))
     );
+
+    /* 🔔 REAL-TIME EMIT (per user) */
+    notifications.forEach((notification: any) => {
+      io.to(notification.User_ID.toString()).emit(
+        "new-notification",
+        notification
+      );
+    });
+
+    return notifications;
+
   } catch (error) {
     console.error("Bulk notification failed:", error);
     return null;
