@@ -1,29 +1,26 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import mongoose from "mongoose";
 import Batch from "../../models/stock-models/Batch";
 import ProductVariant from "../../models/product-models/ProductVariant";
-import { incrementBranchStock } from "../../utils/updateBranchStock";
 import BranchProduct from "../../models/stock-models/BranchProduct";
+import { incrementBranchStock } from "../../utils/updateBranchStock";
 
-/* Create Batch */
+/* ===================== CREATE BATCH (StoreStaff) ===================== */
 export const createBatch = async (req: any, res: Response) => {
+  if (req.user.Role !== "StoreStaff") {
+    return res.status(403).json({ message: "Only store staff can create batches" });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const {
-      Branch_Product_ID,
-      Mfg_Date,
-      Exp_Date,
-      Quantity,
-      Batch_Status,
-    } = req.body;
+    const { Branch_Product_ID, Mfg_Date, Exp_Date, Quantity } = req.body;
 
     if (!Quantity || Quantity <= 0) {
       return res.status(400).json({ message: "Invalid batch quantity" });
     }
 
-    /* Fetch BranchProduct */
     const branchProduct = await BranchProduct.findOne({
       _id: Branch_Product_ID,
       Business_ID: req.user.Business_ID,
@@ -32,12 +29,9 @@ export const createBatch = async (req: any, res: Response) => {
     }).session(session);
 
     if (!branchProduct) {
-      return res.status(404).json({
-        message: "Branch product not found or inactive",
-      });
+      return res.status(404).json({ message: "Branch product not found or inactive" });
     }
 
-    /* Fetch ProductVariant */
     const productVariant = await ProductVariant.findOne({
       _id: branchProduct.Product_Variant_ID,
       Business_ID: req.user.Business_ID,
@@ -45,12 +39,9 @@ export const createBatch = async (req: any, res: Response) => {
     });
 
     if (!productVariant) {
-      return res.status(400).json({
-        message: "Batch tracking not enabled for this product",
-      });
+      return res.status(400).json({ message: "Batch tracking not enabled for this SKU" });
     }
 
-    /* Generate next batch number */
     const lastBatch = await Batch.findOne({
       Branch_ID: req.user.Branch_ID,
       Branch_Product_ID,
@@ -59,29 +50,22 @@ export const createBatch = async (req: any, res: Response) => {
       .session(session);
 
     const nextBatchNo = lastBatch ? lastBatch.Batch_No + 1 : 1;
-
-    /* Create batch code */
     const batchCode = `B-${productVariant.SKU_Normalized}-${nextBatchNo}`;
 
-    /* Create batch */
-    const batch = await Batch.create(
-      [
-        {
-          Business_ID: req.user.Business_ID,
-          Branch_ID: req.user.Branch_ID,
-          Branch_Product_ID,
-          Batch_No: nextBatchNo,
-          Batch_Code: batchCode,
-          Mfg_Date,
-          Exp_Date,
-          Quantity,
-          Batch_Status,
-        },
-      ],
+    const [batch] = await Batch.create(
+      [{
+        Business_ID: req.user.Business_ID,
+        Branch_ID: req.user.Branch_ID,
+        Branch_Product_ID,
+        Batch_No: nextBatchNo,
+        Batch_Code: batchCode,
+        Mfg_Date,
+        Exp_Date,
+        Quantity,
+      }],
       { session }
     );
 
-    /* Increment branch stock */
     await incrementBranchStock({
       Business_ID: req.user.Business_ID,
       Branch_ID: req.user.Branch_ID,
@@ -93,53 +77,126 @@ export const createBatch = async (req: any, res: Response) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json({
-      message: "Batch created successfully",
-      Batch_ID: batch[0]._id,
-    });
+    res.status(201).json({ message: "Batch created", Batch_ID: batch._id });
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-
-    res.status(500).json({
-      message: "Failed to create batch",
-      error: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
 
-/* Fetch Batches By Branch */
+
+const allowedViewRoles = ["StoreManager", "StoreStaff", "Cashier"];
+
+const batchPopulate = {
+  path: "Branch_Product_ID",
+  populate: {
+    path: "Product_Variant_ID",
+    select: "SKU SKU_Normalized Tracking_Type Pack_Size Unit Brand_ID Product_ID",
+    populate: [
+      { path: "Brand_ID", select: "Brand_Name" },
+      {
+        path: "Product_ID",
+        select: "Product_Name Category_ID",
+        populate: { path: "Category_ID", select: "Category_Name" },
+      },
+    ],
+  },
+};
+
+/* Fetch all batches for logged-in branch */
 export const getBatchesByBranch = async (req: any, res: Response) => {
+  if (!allowedViewRoles.includes(req.user.Role)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  const batches = await Batch.find({
+    Business_ID: req.user.Business_ID,
+    Branch_ID: req.user.Branch_ID,
+  }).populate(batchPopulate);
+
+  res.status(200).json(batches);
+};
+
+/* Fetch batches by BranchProduct */
+export const getBatchesByBranchProduct = async (req: any, res: Response) => {
+  if (!allowedViewRoles.includes(req.user.Role)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  const batches = await Batch.find({
+    Business_ID: req.user.Business_ID,
+    Branch_ID: req.user.Branch_ID,
+    Branch_Product_ID: req.params.branchProductId,
+  }).populate(batchPopulate);
+
+  res.status(200).json(batches);
+};
+
+export const getBatchesBySKU = async (req: any, res: Response) => {
+  if (!["StoreManager", "StoreStaff", "Cashier"].includes(req.user.Role)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  const { productVariantId } = req.params;
+
+  const batches = await Batch.find({
+    Business_ID: req.user.Business_ID,
+    Branch_ID: req.user.Branch_ID,
+  }).populate({
+    path: "Branch_Product_ID",
+    match: { Product_Variant_ID: productVariantId },
+    populate: {
+      path: "Product_Variant_ID",
+      select: "SKU SKU_Normalized Tracking_Type Pack_Size Unit Brand_ID Product_ID",
+      populate: [
+        { path: "Brand_ID", select: "Brand_Name" },
+        {
+          path: "Product_ID",
+          select: "Product_Name Category_ID",
+          populate: {
+            path: "Category_ID",
+            select: "Category_Name",
+          },
+        },
+      ],
+    },
+  });
+
+  // Remove non-matching results (populate match returns null)
+  const filteredBatches = batches.filter(b => b.Branch_Product_ID);
+
+  res.status(200).json(filteredBatches);
+};
+
+
+
+
+export const getBatchById = async (req: any, res: Response) => {
   try {
-    const batches = await Batch.find({
+    const { batchId } = req.params;
+
+    // Allowed: StoreStaff, StoreManager, Cashier (already enforced by route)
+    const batch = await Batch.findOne({
+      _id: batchId,
       Business_ID: req.user.Business_ID,
       Branch_ID: req.user.Branch_ID,
     }).populate({
       path: "Branch_Product_ID",
       populate: {
-        path: "Product_Variant_ID Product_ID",
-      },
-    });
-
-    res.status(200).json(batches);
-  } catch (err: any) {
-    res.status(500).json({
-      message: "Failed to fetch batches",
-      error: err.message,
-    });
-  }
-};
-
-/* Fetch Batch by ID */
-export const getBatchById = async (req: any, res: Response) => {
-  try {
-    const batch = await Batch.findOne({
-      _id: req.params.id,
-      Business_ID: req.user.Business_ID,
-    }).populate({
-      path: "Branch_Product_ID",
-      populate: {
-        path: "Product_Variant_ID Product_ID",
+        path: "Product_Variant_ID",
+        select: "SKU SKU_Normalized Tracking_Type Pack_Size Unit Brand_ID Product_ID",
+        populate: [
+          { path: "Brand_ID", select: "Brand_Name" },
+          {
+            path: "Product_ID",
+            select: "Product_Name Category_ID",
+            populate: {
+              path: "Category_ID",
+              select: "Category_Name",
+            },
+          },
+        ],
       },
     });
 
@@ -156,50 +213,62 @@ export const getBatchById = async (req: any, res: Response) => {
   }
 };
 
-/* Update Batch Details */
+
 export const updateBatch = async (req: any, res: Response) => {
+  if (req.user.Role !== "StoreStaff") {
+    return res.status(403).json({ message: "Only store staff can update batches" });
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
+    const { Quantity, Mfg_Date, Exp_Date } = req.body;
+
     const batch = await Batch.findOne({
-      _id: req.params.id,
+      _id: req.params.batchId,
       Business_ID: req.user.Business_ID,
+      Branch_ID: req.user.Branch_ID,
     }).session(session);
 
     if (!batch) {
       return res.status(404).json({ message: "Batch not found" });
     }
 
-    const oldQty = batch.Quantity;
-    const newQty = req.body.Quantity;
-
-    if (newQty !== undefined && newQty !== oldQty) {
-      const diff = newQty - oldQty;
-
+    // Quantity adjustment → affects branch stock
+    if (Quantity !== undefined && Quantity !== batch.Quantity) {
       await incrementBranchStock({
         Business_ID: req.user.Business_ID,
         Branch_ID: batch.Branch_ID,
-        Branch_Product_ID: batch.Branch_Product_ID, // ✅ FIXED
-        quantity: diff,
+        Branch_Product_ID: batch.Branch_Product_ID,
+        quantity: Quantity - batch.Quantity,
         session,
       });
+
+      batch.Quantity = Quantity;
     }
 
-    Object.assign(batch, req.body);
+    // Metadata corrections
+    if (Mfg_Date !== undefined) {
+      batch.Mfg_Date = Mfg_Date;
+    }
+
+    if (Exp_Date !== undefined) {
+      batch.Exp_Date = Exp_Date;
+    }
+
     await batch.save({ session });
 
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json(batch);
+    res.status(200).json({
+      message: "Batch updated successfully",
+      batch,
+    });
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-
-    res.status(500).json({
-      message: "Failed to update batch",
-      error: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 };
