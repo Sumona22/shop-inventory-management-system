@@ -84,12 +84,9 @@ useEffect(() => {
   }, [filters.Product_ID]);
 
   useEffect(() => {
-    if (!filters.ProductVariant_ID) {
-      setBatches([]);
-      return;
-    }
-    fetchBatches(filters.ProductVariant_ID).then(setBatches);
-  }, [filters.ProductVariant_ID]);
+    fetchBatches(filters.Branch_ID).then(setBatches);
+  }, [filters.Branch_ID]);
+
 
   return (
     <div className="bg-white p-4 rounded shadow space-y-4">
@@ -149,7 +146,7 @@ useEffect(() => {
 
     {branches.map((b) => (
       <option key={b._id} value={b._id}>
-        {b.Name}
+        {b.Branch_Name}
       </option>
     ))}
   </select>
@@ -168,7 +165,7 @@ useEffect(() => {
           <option value="">All Categories</option>
           {categories.map((c) => (
             <option key={c._id} value={c._id}>
-              {c.Name}
+              {c.Category_Name}
             </option>
           ))}
         </select>
@@ -186,7 +183,7 @@ useEffect(() => {
           <option value="">All Brands</option>
           {brands.map((b) => (
             <option key={b._id} value={b._id}>
-              {b.Name}
+              {b.Brand_Name}
             </option>
           ))}
         </select>
@@ -204,7 +201,7 @@ useEffect(() => {
           <option value="">All Products</option>
           {products.map((p) => (
             <option key={p._id} value={p._id}>
-              {p.Name}
+              {p.Product_Name}
             </option>
           ))}
         </select>
@@ -222,7 +219,7 @@ useEffect(() => {
           <option value="">All Variants</option>
           {variants.map((v) => (
             <option key={v._id} value={v._id}>
-              {v.Name}
+              {v.SKU}
             </option>
           ))}
         </select>
@@ -240,7 +237,7 @@ useEffect(() => {
           <option value="">All Batches</option>
           {batches.map((b) => (
             <option key={b._id} value={b._id}>
-              {b.Name}
+              {b.Batch_No}
             </option>
           ))}
         </select>

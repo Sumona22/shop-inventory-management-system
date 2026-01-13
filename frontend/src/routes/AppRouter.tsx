@@ -42,6 +42,7 @@ import OrderRequestDetails from "../pages/store-manager/orders/OrderRequestDetai
 /* Store Staff & Cashier */
 import StoreStaffDashboard from "../pages/store-staff/StoreStaffDashboard";
 import CashierDashboard from "../pages/cashier/CashierDashboard";
+import CashierSalesPage from "../pages/cashier/sales/CashierSalesPage";
 
 
 /* ---------- App Router ---------- */
@@ -110,6 +111,7 @@ const AppRouter = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="sales" element={<CashierSalesPage />} />
 
 
 

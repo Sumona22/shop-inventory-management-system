@@ -7,7 +7,12 @@ import BranchStock from "../models/stock-models/BranchStock";
 import ProductVariant from "../models/product-models/ProductVariant";
 import Product from "../models/product-models/Product";
 
-// create sales by cashier
+/* ======================================================
+   CREATE SALE (Cashier)
+   - FIFO batch deduction
+   - Supports batch & non-batch variants
+   - Creates Sale + SaleItems (analytics snapshot)
+====================================================== */
 export const createSale = async (req: Request, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -24,15 +29,15 @@ export const createSale = async (req: Request, res: Response) => {
       // [{ ProductVariant_ID, Quantity, Selling_Price, Tax_Percentage }]
     } = req.body;
 
-    if (!Branch_ID || !items || items.length === 0) {
+    if (!Business_ID || !Branch_ID || !items || items.length === 0) {
       throw new Error("Invalid sale data");
     }
 
     let Total_Amount = 0;
     let Total_Tax = 0;
 
-    // 1️⃣ Create Sale first (invoice header)
-    const sale = await Sale.create(
+    /* 1️⃣ Create Sale Header */
+    const [sale] = await Sale.create(
       [{
         Business_ID,
         Branch_ID,
@@ -49,17 +54,17 @@ export const createSale = async (req: Request, res: Response) => {
       { session }
     );
 
-    // 2️⃣ Process each sale item
+    /* 2️⃣ Process Sale Items */
     for (const i of items) {
       const variant = await ProductVariant.findById(i.ProductVariant_ID).session(session);
-      if (!variant) throw new Error("Variant not found");
+      if (!variant) throw new Error("Product variant not found");
 
       const product = await Product.findById(variant.Product_ID).session(session);
       if (!product) throw new Error("Product not found");
 
       let remainingQty = i.Quantity;
 
-      // FIFO batch stock
+      /* 🔹 Get branch stock (FIFO) */
       const stocks = await BranchStock.find({
         Branch_ID,
         ProductVariant_ID: variant._id,
@@ -68,19 +73,18 @@ export const createSale = async (req: Request, res: Response) => {
         .sort({ Created_At: 1 })
         .session(session);
 
-      const available = stocks.reduce((s, b) => s + b.Quantity, 0);
-      if (available < remainingQty) {
-        throw new Error("Insufficient stock");
+      const availableQty = stocks.reduce((sum, s) => sum + s.Quantity, 0);
+      if (availableQty < remainingQty) {
+        throw new Error(`Insufficient stock for ${variant._id}`);
       }
 
-      // 3️⃣ Deduct stock batch-wise
+      /* 3️⃣ Deduct stock batch-wise */
       for (const stock of stocks) {
-        if (remainingQty === 0) break;
+        if (remainingQty <= 0) break;
 
         const deduct = Math.min(stock.Quantity, remainingQty);
         stock.Quantity -= deduct;
         remainingQty -= deduct;
-
         await stock.save({ session });
 
         const lineAmount = deduct * i.Selling_Price;
@@ -89,17 +93,17 @@ export const createSale = async (req: Request, res: Response) => {
         Total_Amount += lineAmount;
         Total_Tax += taxAmount;
 
-        // 4️⃣ Create SaleItem (analytics snapshot)
+        /* 4️⃣ Create SaleItem snapshot */
         await SaleItem.create(
           [{
-            Sale_ID: sale[0]._id,
+            Sale_ID: sale._id,
             Business_ID,
             Branch_ID,
             Product_ID: product._id,
             ProductVariant_ID: variant._id,
             Category_ID: product.Category_ID,
             Brand_ID: variant.Brand_ID,
-            Batch_ID: stock.Batch_ID,
+            Batch_ID: stock.Batch_ID ?? null, // supports non-batch variants
             Quantity: deduct,
             Cost_Price: stock.Cost_Price,
             Selling_Price: i.Selling_Price,
@@ -111,30 +115,35 @@ export const createSale = async (req: Request, res: Response) => {
       }
     }
 
-    // 5️⃣ Final totals
-    sale[0].Total_Amount = Total_Amount;
-    sale[0].Total_Tax = Total_Tax;
-    sale[0].Grand_Total = Total_Amount + Total_Tax - Discount;
+    /* 5️⃣ Final Totals */
+    sale.Total_Amount = Total_Amount;
+    sale.Total_Tax = Total_Tax;
+    sale.Grand_Total = Total_Amount + Total_Tax - Discount;
 
-    await sale[0].save({ session });
+    await sale.save({ session });
 
     await session.commitTransaction();
     session.endSession();
 
     res.status(201).json({
       success: true,
-      Sale_ID: sale[0]._id,
-      Invoice_Number: sale[0].Invoice_Number,
+      Sale_ID: sale._id,
+      Invoice_Number: sale.Invoice_Number,
     });
-
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
-    res.status(400).json({ success: false, message: error.message });
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// get sales report admin store manager
+/* ======================================================
+   SALES REPORT (Admin / Store Manager)
+   - Used by table view
+====================================================== */
 export const getSalesReport = async (req: Request, res: Response) => {
   const {
     Branch_ID,
@@ -162,14 +171,16 @@ export const getSalesReport = async (req: Request, res: Response) => {
   }
 
   const data = await SaleItem.find(filter)
-    .populate("Product_ID ProductVariant_ID Category_ID Brand_ID")
+    .populate("Product_ID ProductVariant_ID Category_ID Brand_ID Batch_ID")
     .sort({ Created_At: -1 });
 
   res.json(data);
 };
 
-
-// get sales analytics admin manager
+/* ======================================================
+   SALES ANALYTICS (Charts)
+   - day / month / year
+====================================================== */
 export const getSalesAnalytics = async (req: Request, res: Response) => {
   const { Branch_ID, groupBy = "day" } = req.query;
 
@@ -178,13 +189,17 @@ export const getSalesAnalytics = async (req: Request, res: Response) => {
   if (groupBy === "year") format = "%Y";
 
   const match: any = {};
-  if (Branch_ID) match.Branch_ID = new mongoose.Types.ObjectId(Branch_ID as string);
+  if (Branch_ID) {
+    match.Branch_ID = new mongoose.Types.ObjectId(Branch_ID as string);
+  }
 
   const analytics = await SaleItem.aggregate([
     { $match: match },
     {
       $group: {
-        _id: { $dateToString: { format, date: "$Created_At" } },
+        _id: {
+          $dateToString: { format, date: "$Created_At" },
+        },
         Total_Sales: { $sum: "$Line_Total" },
         Quantity_Sold: { $sum: "$Quantity" },
       },

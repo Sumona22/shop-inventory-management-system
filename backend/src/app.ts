@@ -12,6 +12,9 @@ import productRoutes from "./routes/product-routes";
 import orderRequestRoutes from "./routes/orderRequestRoute";
 import stockRoutes from "./routes/stock-routes";
 import notificationRoutes from "./routes/notificationRoute";
+import salesRoutes from "./routes/salesRoutes"; 
+import productVariantRoutes from "./routes/product-routes";
+import batchRoutes from "./routes/stock-routes/batchRoutes";
 
 dotenv.config();
 
@@ -40,6 +43,9 @@ app.use("/api/supplier-products", supplierProductRoutes);
 // Products & Stock
 app.use("/api/products", productRoutes);
 app.use("/api/stock", stockRoutes);
+
+// Sales & Transactions
+app.use("/api/sales", salesRoutes);
 
 // Orders & Notifications
 app.use("/api/order-requests", orderRequestRoutes);
