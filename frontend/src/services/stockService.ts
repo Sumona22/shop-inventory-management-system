@@ -1,74 +1,153 @@
 import { api } from "../api/api";
 
 /* ===============================
-   BRANCH PRODUCTS (Enable / List)
+   HELPER: get auth headers
 ================================ */
+const getAuthHeader = () => {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Not authenticated");
 
-/**
- * Enable a product variant for the current branch
- * (Creates BranchProduct)
- */
-export const enableProductForBranchService = (
-  Product_Variant_ID: string
-) => {
-  return api.post("/stock/branch-products", {
-    Product_Variant_ID,
-  });
-};
-
-/**
- * Get all enabled products for a branch
- * (BranchProduct list)
- */
-export const fetchBranchProductsService = () => {
-  return api.get("/stock/branch-products");
-};
-
-/**
- * Update branch product (activate / deactivate etc.)
- */
-export const updateBranchProductService = (
-  branchProductId: string,
-  payload: any
-) => {
-  return api.put(`/stock/branch-products/${branchProductId}`, payload);
+  return { Authorization: `Bearer ${token}` };
 };
 
 /* ===============================
-   BRANCH STOCK
+   CREATE / ENABLE PRODUCT FOR BRANCH
+   (StoreManager only)
 ================================ */
-
-/**
- * Get all stock entries for a branch
- */
-export const fetchBranchStockService = (branchId: string) => {
-  return api.get(`/stock/stocks/${branchId}`);
-};
-
-/**
- * Get stock for a specific branch product
- */
-export const fetchBranchProductStockService = (
-  branchId: string,
-  branchProductId: string
-) => {
-  return api.get(
-    `/stock/stocks/${branchId}/product/${branchProductId}`
-  );
-};
-
-/**
- * Update stock quantity (manual adjustment / admin)
- */
-export const updateBranchStockService = (
-  branchId: string,
-  branchProductId: string,
-  payload: {
-    Quantity: number;
+export const createBranchProduct = async (payload: {
+  Product_Variant_ID: string;
+  Alert_Threshold?: number;
+}) => {
+  try {
+    const { data } = await api.post("/stock/branch-products", payload, {
+      headers: getAuthHeader(),
+    });
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
   }
+};
+
+/* ===============================
+   GET BRANCH PRODUCTS
+   - Admin: all branches OR filtered
+   - Others: auto-restricted to own branch
+================================ */
+export const fetchBranchProducts = async (params?: {
+  branchId?: string;
+  productVariantId?: string;
+}) => {
+  try {
+    const { data } = await api.get("/stock/branch-products", {
+      params,
+      headers: getAuthHeader(),
+    });
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
+};
+
+/* ===============================
+   GET BRANCH PRODUCTS BY BRANCH ID
+   - Admin: any branch
+   - Others: own branch only
+================================ */
+export const fetchBranchProductsByBranch = async (branchId?: string) => {
+  const branch = branchId || localStorage.getItem("branchId");
+  if (!branch) throw new Error("Branch ID not found");
+
+  try {
+    const { data } = await api.get(`/stock/branch-products/branch/${branch}`, {
+      headers: getAuthHeader(),
+    });
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
+};
+
+/* ===============================
+   UPDATE BRANCH PRODUCT
+   (StoreManager – own branch only)
+================================ */
+export const updateBranchProduct = async (
+  branchProductId: string,
+  payload: { Alert_Threshold?: number; Is_Active?: boolean }
 ) => {
-  return api.put(
-    `/stock/stocks/${branchId}/product/${branchProductId}`,
-    payload
-  );
+  try {
+    const { data } = await api.put(
+      `/stock/branch-products/${branchProductId}`,
+      payload,
+      { headers: getAuthHeader() }
+    );
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
+};
+
+/* ===============================
+   GET ALL STOCK FOR A BRANCH
+   - Admin: any branch
+   - Others: own branch only
+================================ */
+export const fetchBranchStock = async (branchId?: string) => {
+  const branch = branchId || localStorage.getItem("branchId");
+  if (!branch) throw new Error("Branch ID not found");
+
+  try {
+    const { data } = await api.get(`/stock/stocks/${branch}`, {
+      headers: getAuthHeader(),
+    });
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
+};
+
+/* ===============================
+   GET STOCK FOR A SPECIFIC BRANCH PRODUCT
+================================ */
+export const fetchBranchProductStock = async (
+  branchProductId: string,
+  branchId?: string
+) => {
+  const branch = branchId || localStorage.getItem("branchId");
+  if (!branch) throw new Error("Branch ID not found");
+
+  try {
+    const { data } = await api.get(
+      `/stock/stocks/${branch}/product/${branchProductId}`,
+      { headers: getAuthHeader() }
+    );
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
+};
+
+/* ===============================
+   UPDATE BRANCH STOCK (MANUAL)
+   - Admin
+   - StoreManager (own branch only)
+================================ */
+export const updateBranchStock = async (
+  branchProductId: string,
+  quantity: number,
+  branchId?: string
+) => {
+  const branch = branchId || localStorage.getItem("branchId");
+  if (!branch) throw new Error("Branch ID not found");
+
+  try {
+    const { data } = await api.put(
+      `/stock/stocks/${branch}/product/${branchProductId}`,
+      { quantity },
+      { headers: getAuthHeader() }
+    );
+    return data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message);
+  }
 };
