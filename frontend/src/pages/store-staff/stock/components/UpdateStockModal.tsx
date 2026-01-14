@@ -76,11 +76,7 @@ const UpdateStockModal = ({ open, onClose }: Props) => {
 
       onClose();
     } catch (err: any) {
-  const msg =
-    err.response?.data?.message ||
-    "Batch already exists for this product.";
-
-  alert(msg);
+  alert(err.response?.data?.message || "Failed to update stock");
 }
   };
 

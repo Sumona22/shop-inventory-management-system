@@ -15,14 +15,11 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 
-import {
-  fetchBranchProductsByBranch,
-  fetchBranchStock,
-  updateBranchStock,
-} from "../../../services/stockService";
+import { fetchBranchProductsByBranch } from "../../../services/stockService";
 import EnableProductModal from "./EnableProductModal";
 
-/*            Types              */
+/* ================= TYPES ================= */
+
 interface ProductVariant {
   _id: string;
   SKU: string;
@@ -35,47 +32,28 @@ interface ProductVariant {
 interface BranchProduct {
   _id: string;
   Product_Variant_ID: ProductVariant;
+  Stock: number;           // ✅ aggregate stock
   Is_Active: boolean;
 }
 
-interface BranchStock {
-  _id: string;
-  Branch_Product_ID: {
-    _id: string; //  populated object
-  };
-  Quantity: number;
-}
+/* ================= COMPONENT ================= */
 
 const StoreManagerStocks = () => {
   const branchId = localStorage.getItem("branchId")!;
   const [products, setProducts] = useState<BranchProduct[]>([]);
-  const [stockMap, setStockMap] = useState<Record<string, number>>({});
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [enableModalOpen, setEnableModalOpen] = useState(false);
 
-  /* Load branch products & stock */
+  /* Load branch products (WITH STOCK) */
   const loadData = async () => {
     setLoading(true);
     try {
-      const [productsRes, stockRes] = await Promise.all([
-        fetchBranchProductsByBranch(branchId),
-        fetchBranchStock(branchId),
-      ]);
-
-      setProducts(productsRes);
-
-      //  map by Branch_Product_ID._id
-      const map: Record<string, number> = {};
-
-      stockRes.forEach((s: BranchStock) => {
-        map[s.Branch_Product_ID._id] = s.Quantity;
-      });
-
-      setStockMap(map);
+      const data = await fetchBranchProductsByBranch(branchId);
+      setProducts(data);
     } catch (err) {
-      console.error("Failed to load data:", err);
-      alert("Failed to load products or stock");
+      console.error(err);
+      alert("Failed to load branch products");
     } finally {
       setLoading(false);
     }
@@ -85,7 +63,7 @@ const StoreManagerStocks = () => {
     loadData();
   }, []);
 
-  /*       Search filter           */
+  /* Search */
   const filteredProducts = useMemo(() => {
     return products.filter((p) =>
       `${p.Product_Variant_ID.Product_ID.Product_Name}
@@ -96,39 +74,12 @@ const StoreManagerStocks = () => {
     );
   }, [products, search]);
 
-  /*   Stock-based separation    */
-  const productsWithStock = useMemo(() => {
-    return filteredProducts.filter(
-      (p) => stockMap[p._id] !== undefined && stockMap[p._id] > 0
-    );
-  }, [filteredProducts, stockMap]);
+  /* Split by stock */
+  const productsWithStock = filteredProducts.filter((p) => p.Stock > 0);
+  const productsWithoutStock = filteredProducts.filter((p) => p.Stock === 0);
 
-  const productsWithoutStock = useMemo(() => {
-    return filteredProducts.filter(
-      (p) => stockMap[p._id] === undefined
-    );
-  }, [filteredProducts, stockMap]);
+  /* ================= RENDER ================= */
 
-  /* Update stock manually */
-  const updateStock = async (branchProductId: string) => {
-    const quantityStr = prompt("Enter new quantity");
-    if (!quantityStr) return;
-
-    const quantity = Number(quantityStr);
-    if (isNaN(quantity) || quantity < 0) {
-      alert("Invalid quantity");
-      return;
-    }
-
-    try {
-      await updateBranchStock(branchProductId, quantity, branchId);
-      await loadData();
-    } catch (err: any) {
-      alert(err.message || "Failed to update stock");
-    }
-  };
-
-  /*           Render           */
   return (
     <Box sx={{ p: 6 }}>
       {/* Header */}
@@ -150,7 +101,6 @@ const StoreManagerStocks = () => {
           open={enableModalOpen}
           onClose={() => setEnableModalOpen(false)}
           onSuccess={loadData}
-          branchId={branchId}
         />
       </Box>
 
@@ -163,7 +113,7 @@ const StoreManagerStocks = () => {
         sx={{ mb: 4, width: 350 }}
       />
 
-      {/* Products WITH stock */}
+      {/* PRODUCTS WITH STOCK */}
       <Typography variant="h6" fontWeight="bold" mb={1}>
         Products With Stock
       </Typography>
@@ -176,14 +126,13 @@ const StoreManagerStocks = () => {
               <TableCell>Brand</TableCell>
               <TableCell>SKU</TableCell>
               <TableCell align="right">Quantity</TableCell>
-              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {productsWithStock.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={4} align="center">
                   No products with stock
                 </TableCell>
               </TableRow>
@@ -198,18 +147,7 @@ const StoreManagerStocks = () => {
                   {p.Product_Variant_ID.Brand_ID.Brand_Name}
                 </TableCell>
                 <TableCell>{p.Product_Variant_ID.SKU}</TableCell>
-                <TableCell align="right">
-                  {stockMap[p._id]}
-                </TableCell>
-                <TableCell align="right">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => updateStock(p._id)}
-                  >
-                    Update Stock
-                  </Button>
-                </TableCell>
+                <TableCell align="right">{p.Stock}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -218,7 +156,7 @@ const StoreManagerStocks = () => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* Products WITHOUT stock */}
+      {/* PRODUCTS WITHOUT STOCK */}
       <Typography variant="h6" fontWeight="bold" mb={1}>
         Enabled Products (No Stock Yet)
       </Typography>

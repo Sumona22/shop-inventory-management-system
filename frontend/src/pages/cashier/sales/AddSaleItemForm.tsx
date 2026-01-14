@@ -1,107 +1,108 @@
-// frontend/src/pages/cashier/sales/AddSaleItemForm.tsx
 import { useEffect, useState } from "react";
 import {
-  fetchProducts,
-  fetchVariants,
-  fetchBatches,
-} from "../../../services/dropdownService";
-import type { SimpleEntity } from "../../../types/common";
-import type { SaleDraftItem } from "./CashierSalesPage";
+  Autocomplete,
+  Box,
+  Button,
+  TextField,
+  Stack,
+} from "@mui/material";
+import { fetchBranchProductsByBranch } from "../../../services/stockService";
+
+export interface SaleItemPayload {
+  ProductVariant_ID: string;
+  Quantity: number;
+  Selling_Price: number;
+  Tax_Percentage: number;
+}
 
 interface Props {
-  onAdd: (item: SaleDraftItem) => void;
+  onAdd: (item: SaleItemPayload) => void;
 }
 
 const AddSaleItemForm = ({ onAdd }: Props) => {
-  const [products, setProducts] = useState<SimpleEntity[]>([]);
-  const [variants, setVariants] = useState<SimpleEntity[]>([]);
-  const [batches, setBatches] = useState<SimpleEntity[]>([]);
+  const [variants, setVariants] = useState<any[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
 
-  const [productId, setProductId] = useState("");
-  const [variantId, setVariantId] = useState("");
-  const [batchId, setBatchId] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [sellingPrice, setSellingPrice] = useState<number>(0);
+  const [taxPercentage, setTaxPercentage] = useState<number>(0);
 
-  const [price, setPrice] = useState(0);
-  const [tax, setTax] = useState(0);
-
+  /* Load enabled products for branch */
   useEffect(() => {
-    fetchProducts().then(setProducts);
+    fetchBranchProductsByBranch().then((res) => setVariants(res));
   }, []);
 
-  useEffect(() => {
-    if (!productId) return;
-    fetchVariants(productId).then(setVariants);
-  }, [productId]);
+  /* ✅ AUTO-FILL PRICE & TAX */
+  const handleVariantChange = (variant: any | null) => {
+    setSelectedVariant(variant);
 
-  useEffect(() => {
-    if (!variantId) return;
-    fetchBatches().then(setBatches);
-  }, [variantId]);
+    if (variant) {
+      setSellingPrice(variant.Product_Variant_ID.Price);
+      setTaxPercentage(variant.Product_Variant_ID.Tax_Percentage || 0);
+    } else {
+      setSellingPrice(0);
+      setTaxPercentage(0);
+    }
+  };
 
-  const addItem = () => {
-    if (!variantId || quantity <= 0) {
+  const handleAdd = () => {
+    if (!selectedVariant || quantity <= 0) {
       alert("Invalid item");
       return;
     }
 
     onAdd({
-      ProductVariant_ID: variantId,
+      ProductVariant_ID: selectedVariant.Product_Variant_ID._id,
       Quantity: quantity,
-      Selling_Price: price,
-      Tax_Percentage: tax,
+      Selling_Price: sellingPrice,
+      Tax_Percentage: taxPercentage,
     });
 
-    setVariantId("");
-    setBatchId("");
+    setSelectedVariant(null);
     setQuantity(1);
   };
 
   return (
-    <div className="border p-4 rounded space-y-3">
-      <h3 className="font-medium">Add Item</h3>
+    <Box mb={4}>
+      <Stack spacing={2}>
+        <Autocomplete
+          options={variants}
+          value={selectedVariant}
+          onChange={(_, v) => handleVariantChange(v)}
+          getOptionLabel={(o) =>
+            o.Product_Variant_ID.SKU
+          }
+          renderInput={(params) => (
+            <TextField {...params} label="Product" />
+          )}
+        />
 
-      <select
-        className="border p-2 w-full"
-        value={productId}
-        onChange={(e) => setProductId(e.target.value)}
-      >
-        <option value="">Select Product</option>
-        {products.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.Name}
-          </option>
-        ))}
-      </select>
+        <TextField
+          label="Quantity"
+          type="number"
+          value={quantity}
+          onChange={(e) => setQuantity(Number(e.target.value))}
+        />
 
-      <select
-        className="border p-2 w-full"
-        value={variantId}
-        onChange={(e) => setVariantId(e.target.value)}
-      >
-        <option value="">Select Variant</option>
-        {variants.map((v) => (
-          <option key={v._id} value={v._id}>
-            {v.Name}
-          </option>
-        ))}
-      </select>
+        {/* 🔒 READ-ONLY PRICE */}
+        <TextField
+          label="Selling Price"
+          value={sellingPrice}
+          InputProps={{ readOnly: true }}
+        />
 
-      <input
-        type="number"
-        min={1}
-        className="border p-2 w-full"
-        value={quantity}
-        onChange={(e) => setQuantity(Number(e.target.value))}
-      />
+        {/* 🔒 READ-ONLY TAX */}
+        <TextField
+          label="Tax %"
+          value={taxPercentage}
+          InputProps={{ readOnly: true }}
+        />
 
-      <button
-        onClick={addItem}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Add Item
-      </button>
-    </div>
+        <Button variant="outlined" onClick={handleAdd}>
+          Add Item
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 

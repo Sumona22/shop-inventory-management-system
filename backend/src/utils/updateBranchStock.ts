@@ -1,7 +1,8 @@
-import BranchStock from "../models/stock-models/BranchStock";
 import mongoose from "mongoose";
+import BranchProduct, {
+  IBranchProduct,
+} from "../models/stock-models/BranchProduct";
 
-/* Increment stock for a branch product (lazy-create stock) */
 export const incrementBranchStock = async ({
   Business_ID,
   Branch_ID,
@@ -15,44 +16,27 @@ export const incrementBranchStock = async ({
   quantity: number;
   session?: mongoose.ClientSession;
 }) => {
-  if (quantity === 0) return null;
+  if (quantity === 0) return;
 
-  const stock = await BranchStock.findOne(
-    { Branch_ID, Branch_Product_ID },
+  const bp = (await BranchProduct.findOne(
+    {
+      _id: Branch_Product_ID,
+      Business_ID,
+      Branch_ID,
+    },
     null,
     { session }
-  );
+  )) as IBranchProduct | null;
 
-  // Create stock lazily if it doesn't exist
-  if (!stock) {
-    if (quantity < 0) {
-      throw new Error("Cannot reduce stock that does not exist");
-    }
-
-    const newStock = await BranchStock.create(
-      [
-        {
-          Business_ID,
-          Branch_ID,
-          Branch_Product_ID,
-          Quantity: quantity,
-        },
-      ],
-      { session }
-    );
-
-    return newStock[0];
+  if (!bp) {
+    throw new Error("Branch product not found");
   }
 
-  // Update existing stock
-  const updatedQty = stock.Quantity + quantity;
+  bp.Stock = (bp.Stock || 0) + quantity;
 
-  if (updatedQty < 0) {
-    throw new Error("Branch stock cannot be negative");
+  if (bp.Stock < 0) {
+    throw new Error("Branch product stock cannot be negative");
   }
 
-  stock.Quantity = updatedQty;
-  await stock.save({ session });
-
-  return stock;
+  await bp.save({ session });
 };

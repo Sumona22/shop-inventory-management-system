@@ -5,6 +5,7 @@ export interface IBranchProduct extends Document {
   Branch_ID: mongoose.Types.ObjectId;
   Product_Variant_ID: mongoose.Types.ObjectId;
 
+  Stock: number;              // ✅ aggregate
   Alert_Threshold: number;
   Is_Active: boolean;
 }
@@ -26,19 +27,25 @@ const branchProductSchema = new Schema<IBranchProduct>(
       ref: "ProductVariant",
       required: true,
     },
+
+    Stock: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     Alert_Threshold: {
       type: Number,
       default: 5,
       min: 0,
     },
+
     Is_Active: {
       type: Boolean,
       default: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 branchProductSchema.index(

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import BranchProduct from "../../models/stock-models/BranchProduct";
 import User from "../../models/User";
+import Batch from "../../models/stock-models/Batch";
 
 /* Create / Enable Product for Branch */
 export const createBranchProduct = async (req: Request, res: Response) => {
@@ -12,6 +13,15 @@ export const createBranchProduct = async (req: Request, res: Response) => {
     }
 
     const { Product_Variant_ID, Alert_Threshold } = req.body;
+
+    const existing = await BranchProduct.findOne({
+      Business_ID: user.Business_ID,
+      Branch_ID: user.Branch_ID,
+      Product_Variant_ID
+    });
+    if(existing) {
+      return res.status(400).json({ message: "Product already enabled for branch" });
+    }
 
     const branchProduct = await BranchProduct.create({
       Business_ID: user.Business_ID,
@@ -79,19 +89,29 @@ export const getBranchProducts = async (req: Request, res: Response) => {
 
 
 /* Get branch products by branchId */
-
-export const getBranchProductsByBranch = async (req: Request, res: Response) => {
+/* ================================
+   GET BRANCH PRODUCTS BY BRANCH
+   (WITH AGGREGATE STOCK)
+================================ */
+export const getBranchProductsByBranch = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const user = await User.findById((req as any).user.id);
     if (!user) return res.status(401).json({ message: "Unauthorized" });
 
     const { branchId } = req.params;
 
-    // StoreManager restricted to own branch
+    // 🔐 StoreManager restricted to own branch
     if (user.Role === "StoreManager") {
-      if (!user.Branch_ID) return res.status(400).json({ message: "Branch not assigned" });
+      if (!user.Branch_ID)
+        return res.status(400).json({ message: "Branch not assigned" });
+
       if (user.Branch_ID.toString() !== branchId) {
-        return res.status(403).json({ message: "Access denied to this branch" });
+        return res
+          .status(403)
+          .json({ message: "Access denied to this branch" });
       }
     }
 
@@ -100,10 +120,9 @@ export const getBranchProductsByBranch = async (req: Request, res: Response) => 
       Branch_ID: branchId,
       Is_Active: true,
     })
-      .select("Product_Variant_ID Alert_Threshold Is_Active")
       .populate({
         path: "Product_Variant_ID",
-        select: "SKU SKU_Normalized Pack_Size Unit Price Tracking_Type Brand_ID Product_ID",
+        select: "SKU SKU_Normalized Pack_Size Unit Tracking_Type Brand_ID Product_ID",
         populate: [
           { path: "Brand_ID", select: "Brand_Name" },
           {
@@ -112,13 +131,44 @@ export const getBranchProductsByBranch = async (req: Request, res: Response) => 
             populate: { path: "Category_ID", select: "Category_Name" },
           },
         ],
-      });
+      })
+      .lean();
 
-    res.status(200).json(branchProducts);
+    // 🔥 AGGREGATE STOCK FROM BATCH
+    const result = await Promise.all(
+      branchProducts.map(async (bp: any) => {
+        const agg = await Batch.aggregate([
+          {
+            $match: {
+              Branch_Product_ID: bp._id,
+              Quantity: { $gt: 0 },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$Quantity" },
+            },
+          },
+        ]);
+
+        return {
+          ...bp,
+          Stock: agg[0]?.total || 0, // ✅ KEY FIX
+        };
+      })
+    );
+
+    res.status(200).json(result);
   } catch (err: any) {
-    res.status(500).json({ message: "Failed to fetch branch products by branch", error: err.message });
+    console.error("getBranchProductsByBranch error:", err);
+    res.status(500).json({
+      message: "Failed to fetch branch products by branch",
+      error: err.message,
+    });
   }
 };
+
 
 
 /* Update Branch Product */

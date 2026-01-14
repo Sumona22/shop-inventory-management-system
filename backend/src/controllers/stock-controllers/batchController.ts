@@ -4,8 +4,9 @@ import Batch from "../../models/stock-models/Batch";
 import ProductVariant from "../../models/product-models/ProductVariant";
 import BranchProduct from "../../models/stock-models/BranchProduct";
 import { incrementBranchStock } from "../../utils/updateBranchStock";
+import crypto from "crypto";
 
-/* ===================== CREATE BATCH (StoreStaff) ===================== */
+/* ===================== CREATE BATCH ===================== */
 export const createBatch = async (req: any, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -25,43 +26,33 @@ export const createBatch = async (req: any, res: Response) => {
     }).session(session);
 
     if (!branchProduct) {
-      return res
-        .status(404)
-        .json({ message: "Branch product not found or inactive" });
+      return res.status(404).json({ message: "Branch product not found" });
     }
 
-    const productVariant = await ProductVariant.findOne({
-      _id: branchProduct.Product_Variant_ID,
-      Business_ID: req.user.Business_ID,
-      Tracking_Type: "BATCH",
-    });
+    const productVariant = await ProductVariant.findById(
+    branchProduct.Product_Variant_ID
+  );
 
     if (!productVariant) {
+      return res.status(404).json({ message: "Product variant not found" });
+    }
+
+    if (productVariant.Tracking_Type !== "BATCH") {
       return res
         .status(400)
         .json({ message: "Batch tracking not enabled for this SKU" });
     }
 
-    const lastBatch = await Batch.findOne({
-      Branch_ID: req.user.Branch_ID,
-      Branch_Product_ID,
-    })
-      .sort({ Batch_No: -1 })
-      .session(session);
+    const batchCode = `B-${productVariant.SKU}-${crypto
+      .randomBytes(4)
+      .toString("hex")}`;
 
-    const nextBatchNo = lastBatch ? lastBatch.Batch_No + 1 : 1;
-
-    /* ✅ SAFE SKU CODE (FIXES 500 ERROR) */
-    const skuCode = productVariant.SKU_Normalized || productVariant.SKU;
-    const batchCode = `B-${skuCode}-${nextBatchNo}`;
-
-    const [batch] = await Batch.create(
+    await Batch.create(
       [
         {
           Business_ID: req.user.Business_ID,
           Branch_ID: req.user.Branch_ID,
           Branch_Product_ID,
-          Batch_No: nextBatchNo,
           Batch_Code: batchCode,
           Mfg_Date,
           Exp_Date,
@@ -82,26 +73,13 @@ export const createBatch = async (req: any, res: Response) => {
     await session.commitTransaction();
     session.endSession();
 
-    return res.status(201).json({
-      message: "Batch created successfully",
-      Batch_ID: batch._id,
-    });
+    res.status(201).json({ message: "Batch created successfully" });
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-
-    /* ✅ DUPLICATE BATCH SAFETY */
-    if (err.code === 11000) {
-      return res.status(409).json({
-        message: "Duplicate batch detected. Please retry.",
-      });
-    }
-
-    return res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
-
-
 
 const allowedViewRoles = ["StoreManager", "StoreStaff", "Cashier"];
 

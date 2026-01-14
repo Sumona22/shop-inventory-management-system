@@ -4,8 +4,7 @@ import StockSearchBar from "./components/StockSearchBar";
 import BatchStockTable from "./components/BatchStockTable";
 import ItemStockTable from "./components/ItemStockTable";
 import UpdateStockModal from "./components/UpdateStockModal";
-import { fetchBranchStock } from "../../../services/stockService";
-
+import { fetchBatchesByBranch } from "../../../services/batchService";
 
 const StockPage = () => {
   const [search, setSearch] = useState("");
@@ -13,19 +12,21 @@ const StockPage = () => {
   const [items, setItems] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
 
+  const loadData = async () => {
+    const res = await fetchBatchesByBranch();
+    setBatches(res.data);
+  };
+
   useEffect(() => {
-    fetchBranchStock().then((res) => {
-      setBatches(res.batches || []);
-      setItems(res.items || []);
-    });
+    loadData();
   }, []);
 
-  const filteredBatches = batches.filter((b) =>
-    b.Batch_No.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const filteredItems = items.filter((i) =>
-    i.Item_No.toLowerCase().includes(search.toLowerCase())
+  const filteredBatches = batches.filter(
+    (b) =>
+      b.Batch_Code.toLowerCase().includes(search.toLowerCase()) ||
+      b.Branch_Product_ID.Product_Variant_ID.SKU
+        .toLowerCase()
+        .includes(search.toLowerCase())
   );
 
   return (
@@ -45,9 +46,15 @@ const StockPage = () => {
       <Typography variant="h6" mt={3}>
         Item Stock
       </Typography>
-      <ItemStockTable items={filteredItems} />
+      <ItemStockTable items={items} />
 
-      <UpdateStockModal open={open} onClose={() => setOpen(false)} />
+      <UpdateStockModal
+        open={open}
+        onClose={() => {
+          setOpen(false);
+          loadData(); // 🔥 refresh after stock update
+        }}
+      />
     </Box>
   );
 };
