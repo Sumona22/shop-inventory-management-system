@@ -49,6 +49,7 @@ import CashierLayout from "../layouts/CashierLayout";
 import StoreStaffLayout from "../layouts/StoreStaffLayout";
 import StockAlertsPage from "../pages/store-staff/StockAlertsPage";
 import StockPage from "../pages/store-staff/stock/StockPage";
+import StockoutForecast from "../components/forecast/StockoutForecast";
 
 
 /* ---------- App Router ---------- */
@@ -175,6 +176,7 @@ const AppRouter = () => {
   <Route path="order-requests" element={<MyOrderRequests />} />
   <Route path="order-requests/new" element={<CreateOrderRequest />} />
   <Route path="order-requests/:id" element={<OrderRequestDetails />} />
+  <Route path="forecast" element={<StockoutForecast />}/>
   {/* future store manager routes go here */}
 
   <Route path="/dashboard/store-manager/stocks" element={<StoreManagerStocks />}/>

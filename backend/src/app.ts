@@ -13,7 +13,7 @@ import orderRequestRoutes from "./routes/orderRequestRoute";
 import stockRoutes from "./routes/stock-routes";
 import notificationRoutes from "./routes/notificationRoute";
 import salesRoutes from "./routes/salesRoutes"; 
-
+import forecastRoutes from "./routes/forecastRoutes";
 
 dotenv.config();
 
@@ -54,5 +54,8 @@ app.use("/api/notifications", notificationRoutes);
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "OK" });
 });
+/* Forecast for exams */
+app.use("/api/forecast", forecastRoutes);
+
 
 export default app;
