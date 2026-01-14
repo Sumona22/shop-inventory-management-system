@@ -1,29 +1,37 @@
 import { useState } from "react";
 import axios from "axios";
 import { Box, Button, Typography } from "@mui/material";
+
 import AddSaleItemForm, {
   type SaleItemPayload,
 } from "./AddSaleItemForm";
 import SaleItemsTable from "./SaleItemsTable";
 import { createSale } from "../../../services/cashierSalesService";
 
-/* 🔐 PAYMENT MODE NORMALIZATION */
-const PAYMENT_MODE_MAP = {
-  CASH: "Cash",
-  CARD: "Card",
-  UPI: "UPI",
-} as const;
-
-
 const CashierSalesPage = () => {
   const [items, setItems] = useState<SaleItemPayload[]>([]);
-  const [paymentMode, setPaymentMode] = useState<"CASH" | "CARD" | "UPI">("CASH");
+  const [paymentMode, setPaymentMode] =
+    useState<"CASH" | "CARD" | "UPI">("CASH");
+
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  /* ✅ MERGE DUPLICATE VARIANTS */
   const addItem = (item: SaleItemPayload) => {
-    setItems((prev) => [...prev, item]);
+    setItems((prev) => {
+      const idx = prev.findIndex(
+        (i) => i.ProductVariant_ID === item.ProductVariant_ID
+      );
+
+      if (idx !== -1) {
+        const updated = [...prev];
+        updated[idx].Quantity += item.Quantity;
+        return updated;
+      }
+
+      return [...prev, item];
+    });
   };
 
   const removeItem = (index: number) => {
@@ -40,16 +48,14 @@ const CashierSalesPage = () => {
       setSubmitting(true);
 
       await createSale({
-  Business_ID: localStorage.getItem("businessId")!,
-  Branch_ID: localStorage.getItem("branchId")!,
-  Payment_Mode: PAYMENT_MODE_MAP[paymentMode],
-  Customer_Name: customerName || undefined,
-  Customer_Phone: customerPhone || undefined,
-  items,
-});
-
+        Payment_Mode: "Cash", // ✅ enum only
+        Customer_Name: customerName || undefined,
+        Customer_Phone: customerPhone || undefined,
+        items,
+      });
 
       alert("Sale completed successfully");
+
       setItems([]);
       setCustomerName("");
       setCustomerPhone("");

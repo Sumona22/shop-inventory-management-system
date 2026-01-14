@@ -84,18 +84,17 @@ const AddSaleItemForm = ({ onAdd }: Props) => {
           onChange={(e) => setQuantity(Number(e.target.value))}
         />
 
-        {/* 🔒 READ-ONLY PRICE */}
+
         <TextField
           label="Selling Price"
           value={sellingPrice}
-          InputProps={{ readOnly: true }}
+          onChange={(e) => setSellingPrice(Number(e.target.value))}
         />
 
-        {/* 🔒 READ-ONLY TAX */}
         <TextField
           label="Tax %"
           value={taxPercentage}
-          InputProps={{ readOnly: true }}
+          onChange={(e) => setTaxPercentage(Number(e.target.value))}
         />
 
         <Button variant="outlined" onClick={handleAdd}>

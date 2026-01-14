@@ -7,6 +7,7 @@ export interface SaleItem {
   Brand_ID: { Name: string };
 
   Quantity: number;
+  Cost_Price: number;
   Selling_Price: number;
   Tax_Percentage: number;
   Line_Total: number;
