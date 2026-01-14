@@ -124,24 +124,29 @@ export const createSale = async (req: any, res: Response) => {
 
         /* 5️⃣ Create SaleItem snapshot */
         await SaleItem.create(
-          [
-            {
-              Sale_ID: sale._id,
-              Business_ID,
-              Branch_ID,
-              Product_ID: product._id,
-              ProductVariant_ID: variant._id,
-              Category_ID: product.Category_ID,
-              Brand_ID: variant.Brand_ID,
-              Batch_ID: batch._id,
-              Quantity: deduct,
-              Selling_Price: item.Selling_Price,
-              Tax_Percentage: item.Tax_Percentage,
-              Line_Total: lineAmount + taxAmount,
-            },
-          ],
-          { session }
-        );
+  [
+    {
+      Sale_ID: sale._id,
+      Business_ID,
+      Branch_ID,
+      Product_ID: product._id,
+      ProductVariant_ID: variant._id,
+      Category_ID: product.Category_ID,
+      Brand_ID: variant.Brand_ID,
+      Batch_ID: batch._id,
+
+      Quantity: deduct,
+
+      Cost_Price: variant.Price, 
+      Selling_Price: item.Selling_Price,
+      Tax_Percentage: item.Tax_Percentage,
+
+      Line_Total: lineAmount + taxAmount,
+    },
+  ],
+  { session }
+);
+
       }
     }
 
