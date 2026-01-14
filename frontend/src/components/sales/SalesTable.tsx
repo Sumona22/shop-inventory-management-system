@@ -35,10 +35,10 @@ const SalesTable = ({ filters }: Props) => {
       <tbody>
         {data.map((s) => (
           <tr key={s._id} className="border-t">
-            <td>{s.Product_ID.Name}</td>
-            <td>{s.ProductVariant_ID.Variant_Name}</td>
-            <td>{s.Category_ID.Name}</td>
-            <td>{s.Brand_ID.Name}</td>
+            <td>{s.Product_ID?.Product_Name}</td>
+            <td>{s.ProductVariant_ID?.SKU}</td>
+            <td>{s.Category_ID?.Category_Name}</td>
+            <td>{s.Brand_ID?.Brand_Name}</td>
             <td>{s.Quantity}</td>
             <td>₹{s.Line_Total}</td>
             <td>{new Date(s.Created_At).toLocaleDateString()}</td>

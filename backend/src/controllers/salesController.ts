@@ -208,8 +208,12 @@ export const getSalesReport = async (req: Request, res: Response) => {
   }
 
   const data = await SaleItem.find(filter)
-    .populate("Product_ID ProductVariant_ID Category_ID Brand_ID Batch_ID")
-    .sort({ Created_At: -1 });
+  .populate({ path: "Product_ID", model: "Product" })
+  .populate({ path: "ProductVariant_ID", model: "ProductVariant" })
+  .populate({ path: "Category_ID", model: "Category" })
+  .populate({ path: "Brand_ID", model: "Brand" })
+  .populate({ path: "Batch_ID", model: "Batch" })
+  .sort({ Created_At: -1 });
 
   res.json(data);
 };
