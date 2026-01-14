@@ -76,8 +76,8 @@ const UpdateStockModal = ({ open, onClose }: Props) => {
 
       onClose();
     } catch (err: any) {
-      alert(err.message);
-    }
+  alert(err.response?.data?.message || "Failed to update stock");
+}
   };
 
   return (

@@ -19,7 +19,7 @@ const BatchStockTable = ({ batches }: Props) => {
         <TableHead>
           <TableRow>
             <TableCell>SKU</TableCell>
-            <TableCell>Batch No</TableCell>
+            <TableCell>Batch Code</TableCell>
             <TableCell>Quantity</TableCell>
             <TableCell>Expiry</TableCell>
             <TableCell>Status</TableCell>
@@ -32,14 +32,14 @@ const BatchStockTable = ({ batches }: Props) => {
               <TableCell>
                 {b.Branch_Product_ID.Product_Variant_ID.SKU}
               </TableCell>
-              <TableCell>{b.Batch_No}</TableCell>
+              <TableCell>{b.Batch_Code}</TableCell>
               <TableCell>{b.Quantity}</TableCell>
               <TableCell>
-                {b.Expiry_Date
-                  ? new Date(b.Expiry_Date).toLocaleDateString()
+                {b.Exp_Date
+                  ? new Date(b.Exp_Date).toLocaleDateString()
                   : "-"}
               </TableCell>
-              <TableCell>{b.Status}</TableCell>
+              <TableCell>{b.Batch_Status}</TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -1,25 +1,28 @@
-// frontend/src/pages/cashier/sales/CashierSalesPage.tsx
 import { useState } from "react";
-import AddSaleItemForm from "./AddSaleItemForm";
+import axios from "axios";
+import { Box, Button, Typography } from "@mui/material";
+import AddSaleItemForm, {
+  type SaleItemPayload,
+} from "./AddSaleItemForm";
 import SaleItemsTable from "./SaleItemsTable";
 import { createSale } from "../../../services/cashierSalesService";
-import { useAuth } from "../../../context/AuthContext";
 
-export interface SaleDraftItem {
-  ProductVariant_ID: string;
-  Quantity: number;
-  Selling_Price: number;
-  Tax_Percentage: number;
-}
+/* 🔐 PAYMENT MODE NORMALIZATION */
+const PAYMENT_MODE_MAP = {
+  CASH: "Cash",
+  CARD: "Card",
+  UPI: "UPI",
+} as const;
+
 
 const CashierSalesPage = () => {
-  const { role } = useAuth();
-
-  const [items, setItems] = useState<SaleDraftItem[]>([]);
-  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [items, setItems] = useState<SaleItemPayload[]>([]);
+  const [paymentMode, setPaymentMode] = useState<"CASH" | "CARD" | "UPI">("CASH");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const addItem = (item: SaleDraftItem) => {
+  const addItem = (item: SaleItemPayload) => {
     setItems((prev) => [...prev, item]);
   };
 
@@ -37,47 +40,50 @@ const CashierSalesPage = () => {
       setSubmitting(true);
 
       await createSale({
-        Payment_Mode: paymentMode,
-        items,
-      });
+  Business_ID: localStorage.getItem("businessId")!,
+  Branch_ID: localStorage.getItem("branchId")!,
+  Payment_Mode: PAYMENT_MODE_MAP[paymentMode],
+  Customer_Name: customerName || undefined,
+  Customer_Phone: customerPhone || undefined,
+  items,
+});
+
 
       alert("Sale completed successfully");
       setItems([]);
-    } catch (err: any) {
-      alert(err?.response?.data?.message || "Sale failed");
+      setCustomerName("");
+      setCustomerPhone("");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        alert(err.response?.data?.message || "Sale failed");
+      } else {
+        alert("Unexpected error");
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-semibold">New Sale</h2>
+    <Box sx={{ p: 4 }}>
+      <Typography variant="h4" mb={3}>
+        New Sale
+      </Typography>
 
       <AddSaleItemForm onAdd={addItem} />
 
       <SaleItemsTable items={items} onRemove={removeItem} />
 
-      <div className="flex items-center gap-4">
-        <select
-          className="border p-2 rounded"
-          value={paymentMode}
-          onChange={(e) => setPaymentMode(e.target.value)}
-        >
-          <option value="Cash">Cash</option>
-          <option value="UPI">UPI</option>
-          <option value="Card">Card</option>
-        </select>
-
-        <button
+      <Box mt={3}>
+        <Button
+          variant="contained"
           onClick={submitSale}
           disabled={submitting}
-          className="bg-green-600 text-white px-6 py-2 rounded"
         >
-          {submitting ? "Processing..." : "Complete Sale"}
-        </button>
-      </div>
-    </div>
+          Submit Sale
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

@@ -3,119 +3,149 @@ import mongoose from "mongoose";
 
 import Sale from "../models/Sale";
 import SaleItem from "../models/SaleItem";
-import BranchStock from "../models/stock-models/BranchStock";
+import Batch, { Batch_Status } from "../models/stock-models/Batch";
+import BranchProduct from "../models/stock-models/BranchProduct";
 import ProductVariant from "../models/product-models/ProductVariant";
 import Product from "../models/product-models/Product";
 
 /* ======================================================
    CREATE SALE (Cashier)
-   - FIFO batch deduction
-   - Supports batch & non-batch variants
-   - Creates Sale + SaleItems (analytics snapshot)
+   - FIFO by Exp_Date
+   - Batch-based stock deduction
+   - BranchStock NOT touched here
 ====================================================== */
-export const createSale = async (req: Request, res: Response) => {
+export const createSale = async (req: any, res: Response) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     const {
-      Business_ID,
-      Branch_ID,
+      Payment_Mode,
       Customer_Name,
       Customer_Phone,
-      Payment_Mode,
       Discount = 0,
-      items, 
-      // [{ ProductVariant_ID, Quantity, Selling_Price, Tax_Percentage }]
+      items,
     } = req.body;
 
-    if (!Business_ID || !Branch_ID || !items || items.length === 0) {
-      throw new Error("Invalid sale data");
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: "No sale items provided" });
     }
+
+    const Business_ID = req.user.Business_ID;
+    const Branch_ID = req.user.Branch_ID;
 
     let Total_Amount = 0;
     let Total_Tax = 0;
 
-    /* 1️⃣ Create Sale Header */
+    /* 1️⃣ Create Sale header */
     const [sale] = await Sale.create(
-      [{
-        Business_ID,
-        Branch_ID,
-        Cashier_User_ID: req.user!.id,
-        Invoice_Number: `INV-${Date.now()}`,
-        Customer_Name,
-        Customer_Phone,
-        Payment_Mode,
-        Total_Amount: 0,
-        Total_Tax: 0,
-        Discount,
-        Grand_Total: 0,
-      }],
+      [
+        {
+          Business_ID,
+          Branch_ID,
+          Cashier_User_ID: req.user.id,
+          Invoice_Number: `INV-${Date.now()}`,
+          Customer_Name,
+          Customer_Phone,
+          Payment_Mode,
+          Total_Amount: 0,
+          Total_Tax: 0,
+          Discount,
+          Grand_Total: 0,
+        },
+      ],
       { session }
     );
 
-    /* 2️⃣ Process Sale Items */
-    for (const i of items) {
-      const variant = await ProductVariant.findById(i.ProductVariant_ID).session(session);
+    /* 2️⃣ Process each item */
+    for (const item of items) {
+      const variant = await ProductVariant.findById(
+        item.ProductVariant_ID
+      ).session(session);
       if (!variant) throw new Error("Product variant not found");
 
-      const product = await Product.findById(variant.Product_ID).session(session);
+      const product = await Product.findById(
+        variant.Product_ID
+      ).session(session);
       if (!product) throw new Error("Product not found");
 
-      let remainingQty = i.Quantity;
-
-      /* 🔹 Get branch stock (FIFO) */
-      const stocks = await BranchStock.find({
+      const branchProduct = await BranchProduct.findOne({
+        Business_ID,
         Branch_ID,
-        ProductVariant_ID: variant._id,
-        Quantity: { $gt: 0 },
-      })
-        .sort({ Created_At: 1 })
-        .session(session);
+        Product_Variant_ID: variant._id,
+        Is_Active: true,
+      }).session(session);
 
-      const availableQty = stocks.reduce((sum, s) => sum + s.Quantity, 0);
-      if (availableQty < remainingQty) {
-        throw new Error(`Insufficient stock for ${variant._id}`);
+      if (!branchProduct) {
+        throw new Error(`Product not enabled for branch: ${variant.SKU}`);
       }
 
-      /* 3️⃣ Deduct stock batch-wise */
-      for (const stock of stocks) {
+      let remainingQty = item.Quantity;
+
+      /* 3️⃣ FIFO batches by expiry */
+      const batches = await Batch.find({
+        Business_ID,
+        Branch_ID,
+        Branch_Product_ID: branchProduct._id,
+        Batch_Status: Batch_Status.ACTIVE,
+        Quantity: { $gt: 0 },
+      })
+        .sort({ Exp_Date: 1, createdAt: 1 })
+        .session(session);
+
+      const availableQty = batches.reduce(
+        (sum, b) => sum + b.Quantity,
+        0
+      );
+
+      if (availableQty < remainingQty) {
+        throw new Error(`Insufficient stock for ${variant.SKU}`);
+      }
+
+      /* 4️⃣ Deduct batch-wise */
+      for (const batch of batches) {
         if (remainingQty <= 0) break;
 
-        const deduct = Math.min(stock.Quantity, remainingQty);
-        stock.Quantity -= deduct;
+        const deduct = Math.min(batch.Quantity, remainingQty);
+        batch.Quantity -= deduct;
         remainingQty -= deduct;
-        await stock.save({ session });
 
-        const lineAmount = deduct * i.Selling_Price;
-        const taxAmount = (lineAmount * i.Tax_Percentage) / 100;
+        if (batch.Quantity === 0) {
+          batch.Batch_Status = Batch_Status.DEPLETED;
+        }
+
+        await batch.save({ session });
+
+        const lineAmount = deduct * item.Selling_Price;
+        const taxAmount = (lineAmount * item.Tax_Percentage) / 100;
 
         Total_Amount += lineAmount;
         Total_Tax += taxAmount;
 
-        /* 4️⃣ Create SaleItem snapshot */
+        /* 5️⃣ Create SaleItem snapshot */
         await SaleItem.create(
-          [{
-            Sale_ID: sale._id,
-            Business_ID,
-            Branch_ID,
-            Product_ID: product._id,
-            ProductVariant_ID: variant._id,
-            Category_ID: product.Category_ID,
-            Brand_ID: variant.Brand_ID,
-            Batch_ID: stock.Batch_ID ?? null, // supports non-batch variants
-            Quantity: deduct,
-            Cost_Price: stock.Cost_Price,
-            Selling_Price: i.Selling_Price,
-            Tax_Percentage: i.Tax_Percentage,
-            Line_Total: lineAmount + taxAmount,
-          }],
+          [
+            {
+              Sale_ID: sale._id,
+              Business_ID,
+              Branch_ID,
+              Product_ID: product._id,
+              ProductVariant_ID: variant._id,
+              Category_ID: product.Category_ID,
+              Brand_ID: variant.Brand_ID,
+              Batch_ID: batch._id,
+              Quantity: deduct,
+              Selling_Price: item.Selling_Price,
+              Tax_Percentage: item.Tax_Percentage,
+              Line_Total: lineAmount + taxAmount,
+            },
+          ],
           { session }
         );
       }
     }
 
-    /* 5️⃣ Final Totals */
+    /* 6️⃣ Final totals */
     sale.Total_Amount = Total_Amount;
     sale.Total_Tax = Total_Tax;
     sale.Grand_Total = Total_Amount + Total_Tax - Discount;
@@ -125,20 +155,22 @@ export const createSale = async (req: Request, res: Response) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       Sale_ID: sale._id,
       Invoice_Number: sale.Invoice_Number,
     });
-  } catch (error: any) {
+  } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
-    res.status(400).json({
+
+    return res.status(400).json({
       success: false,
-      message: error.message,
+      message: err.message,
     });
   }
 };
+
 
 /* ======================================================
    SALES REPORT (Admin / Store Manager)

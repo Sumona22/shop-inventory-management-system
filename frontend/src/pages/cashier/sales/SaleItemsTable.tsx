@@ -1,46 +1,57 @@
-// frontend/src/pages/cashier/sales/SaleItemsTable.tsx
-import type { SaleDraftItem } from "./CashierSalesPage";
+import {
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import type { SaleItemPayload } from "./AddSaleItemForm";
 
 interface Props {
-  items: SaleDraftItem[];
+  items: SaleItemPayload[];
   onRemove: (index: number) => void;
 }
 
 const SaleItemsTable = ({ items, onRemove }: Props) => {
-  if (items.length === 0) {
-    return <p className="text-gray-500">No items added</p>;
-  }
-
   return (
-    <table className="w-full border">
-      <thead>
-        <tr className="bg-gray-100">
-          <th className="p-2">Variant</th>
-          <th className="p-2">Qty</th>
-          <th className="p-2">Price</th>
-          <th className="p-2">Tax %</th>
-          <th className="p-2"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((i, idx) => (
-          <tr key={idx} className="border-t">
-            <td className="p-2">{i.ProductVariant_ID}</td>
-            <td className="p-2">{i.Quantity}</td>
-            <td className="p-2">{i.Selling_Price}</td>
-            <td className="p-2">{i.Tax_Percentage}</td>
-            <td className="p-2">
-              <button
-                onClick={() => onRemove(idx)}
-                className="text-red-600"
-              >
-                Remove
-              </button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell>SKU</TableCell>
+          <TableCell align="right">Qty</TableCell>
+          <TableCell align="right">Price</TableCell>
+          <TableCell align="right">Tax %</TableCell>
+          <TableCell align="right">Total</TableCell>
+          <TableCell />
+        </TableRow>
+      </TableHead>
+
+      <TableBody>
+        {items.map((i, idx) => {
+          const lineAmount = i.Quantity * i.Selling_Price;
+          const taxAmount = (lineAmount * i.Tax_Percentage) / 100;
+
+          return (
+            <TableRow key={idx}>
+              <TableCell>{i.ProductVariant_ID}</TableCell>
+              <TableCell align="right">{i.Quantity}</TableCell>
+              <TableCell align="right">{i.Selling_Price}</TableCell>
+              <TableCell align="right">{i.Tax_Percentage}</TableCell>
+              <TableCell align="right">
+                {(lineAmount + taxAmount).toFixed(2)}
+              </TableCell>
+              <TableCell align="right">
+                <IconButton onClick={() => onRemove(idx)}>
+                  <DeleteIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 };
 

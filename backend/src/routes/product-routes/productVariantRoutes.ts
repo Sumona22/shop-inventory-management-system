@@ -21,7 +21,7 @@ router.post(
 router.get(
   "/",
   protect,
-  authorize("Admin", "StoreManager"),
+  authorize("Admin", "StoreManager", "StoreStaff", "Cashier"),
   getProductVariants
 );
 

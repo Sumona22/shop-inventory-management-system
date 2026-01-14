@@ -1,74 +1,56 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export enum Batch_Status {
-    ACTIVE = "ACTIVE",
-    EXPIRED = "EXPIRED",
-    DEPLETED = "DEPLETED",
+  ACTIVE = "ACTIVE",
+  EXPIRED = "EXPIRED",
+  DEPLETED = "DEPLETED",
 }
 
 export interface IBatch extends Document {
-    Business_ID: mongoose.Types.ObjectId;
-    Branch_ID: mongoose.Types.ObjectId;
-    Branch_Product_ID: mongoose.Types.ObjectId;
+  Business_ID: mongoose.Types.ObjectId;
+  Branch_ID: mongoose.Types.ObjectId;
+  Branch_Product_ID: mongoose.Types.ObjectId;
 
-    Batch_No: number;
-    Batch_Code: string;
+  Batch_Code: string;
+  Mfg_Date?: Date;
+  Exp_Date?: Date;
 
-    Mfg_Date?: Date;
-    Exp_Date?: Date;
-
-    Quantity: number;
-    Batch_Status: Batch_Status;
+  Quantity: number;
+  Batch_Status: Batch_Status;
 }
 
 const batchSchema = new Schema<IBatch>(
-    {
-        Business_ID: {
-            type: Schema.Types.ObjectId,
-            ref: "Business",
-            required: true,
-        },
-        Branch_ID: {
-            type: Schema.Types.ObjectId,
-            ref: "Branch",
-            required: true,
-        },
-        Branch_Product_ID: {
-            type: Schema.Types.ObjectId,
-            ref: "BranchProduct",
-            required: true,
-        },
-        Batch_No: {
-            type: Number,
-            required: true,
-        },
-        Batch_Code: {
-            type: String,
-            required: true,
-            trim: true,
-        },
-        Mfg_Date: Date,
-        Exp_Date: Date,
-
-        Quantity: {
-            type: Number,
-            required: true,
-            min: 1,
-        },
-        Batch_Status: {
-            type: String,
-            enum: Object.values(Batch_Status),
-            default: Batch_Status.ACTIVE,
-        },
+  {
+    Business_ID: { type: Schema.Types.ObjectId, ref: "Business", required: true },
+    Branch_ID: { type: Schema.Types.ObjectId, ref: "Branch", required: true },
+    Branch_Product_ID: {
+      type: Schema.Types.ObjectId,
+      ref: "BranchProduct",
+      required: true,
     },
-    {
-        timestamps: true
-    }
+
+    Batch_Code: { type: String, required: true },
+
+    Mfg_Date: Date,
+    Exp_Date: Date,
+
+    Quantity: { type: Number, required: true, min: 1 },
+
+    Batch_Status: {
+      type: String,
+      enum: Object.values(Batch_Status),
+      default: Batch_Status.ACTIVE,
+    },
+  },
+  { timestamps: true }
 );
 
-batchSchema.index({ Business_ID: 1, Branch_ID: 1, Branch_Product_ID: 1, Batch_No: 1 }, { unique: true });
+batchSchema.index(
+  { Business_ID: 1, Branch_ID: 1, Batch_Code: 1 },
+  { unique: true }
+);
+
+batchSchema.index({ Branch_Product_ID: 1 });
 batchSchema.index({ Exp_Date: 1 });
-batchSchema.index({ Batch_Status: 1 });
-batchSchema.index({ Branch_Product_ID: 1 })
 
 export default mongoose.model<IBatch>("Batch", batchSchema);

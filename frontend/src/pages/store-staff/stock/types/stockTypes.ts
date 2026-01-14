@@ -29,11 +29,16 @@ export interface BranchProduct {
 
 export interface Batch {
   _id: string;
-  Branch_Product_ID: BranchProduct;
-  Batch_No: string;
+  Batch_Code: string;
   Quantity: number;
-  Expiry_Date?: string;
-  Status: string;
+  Exp_Date?: string;
+  Batch_Status: "ACTIVE" | "EXPIRED" | "DEPLETED";
+  Branch_Product_ID: {
+    _id: string;
+    Product_Variant_ID: {
+      SKU: string;
+    };
+  };
 }
 
 export interface Item {

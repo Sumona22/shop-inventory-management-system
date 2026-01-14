@@ -4,13 +4,10 @@ import Batch from "../../models/stock-models/Batch";
 import ProductVariant from "../../models/product-models/ProductVariant";
 import BranchProduct from "../../models/stock-models/BranchProduct";
 import { incrementBranchStock } from "../../utils/updateBranchStock";
+import crypto from "crypto";
 
-/* ===================== CREATE BATCH (StoreStaff) ===================== */
+/* ===================== CREATE BATCH ===================== */
 export const createBatch = async (req: any, res: Response) => {
-  if (req.user.Role !== "StoreStaff") {
-    return res.status(403).json({ message: "Only store staff can create batches" });
-  }
-
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -29,40 +26,39 @@ export const createBatch = async (req: any, res: Response) => {
     }).session(session);
 
     if (!branchProduct) {
-      return res.status(404).json({ message: "Branch product not found or inactive" });
+      return res.status(404).json({ message: "Branch product not found" });
     }
 
-    const productVariant = await ProductVariant.findOne({
-      _id: branchProduct.Product_Variant_ID,
-      Business_ID: req.user.Business_ID,
-      Tracking_Type: "BATCH",
-    });
+    const productVariant = await ProductVariant.findById(
+    branchProduct.Product_Variant_ID
+  );
 
     if (!productVariant) {
-      return res.status(400).json({ message: "Batch tracking not enabled for this SKU" });
+      return res.status(404).json({ message: "Product variant not found" });
     }
 
-    const lastBatch = await Batch.findOne({
-      Branch_ID: req.user.Branch_ID,
-      Branch_Product_ID,
-    })
-      .sort({ Batch_No: -1 })
-      .session(session);
+    if (productVariant.Tracking_Type !== "BATCH") {
+      return res
+        .status(400)
+        .json({ message: "Batch tracking not enabled for this SKU" });
+    }
 
-    const nextBatchNo = lastBatch ? lastBatch.Batch_No + 1 : 1;
-    const batchCode = `B-${productVariant.SKU_Normalized}-${nextBatchNo}`;
+    const batchCode = `B-${productVariant.SKU}-${crypto
+      .randomBytes(4)
+      .toString("hex")}`;
 
-    const [batch] = await Batch.create(
-      [{
-        Business_ID: req.user.Business_ID,
-        Branch_ID: req.user.Branch_ID,
-        Branch_Product_ID,
-        Batch_No: nextBatchNo,
-        Batch_Code: batchCode,
-        Mfg_Date,
-        Exp_Date,
-        Quantity,
-      }],
+    await Batch.create(
+      [
+        {
+          Business_ID: req.user.Business_ID,
+          Branch_ID: req.user.Branch_ID,
+          Branch_Product_ID,
+          Batch_Code: batchCode,
+          Mfg_Date,
+          Exp_Date,
+          Quantity,
+        },
+      ],
       { session }
     );
 
@@ -77,14 +73,13 @@ export const createBatch = async (req: any, res: Response) => {
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json({ message: "Batch created", Batch_ID: batch._id });
+    res.status(201).json({ message: "Batch created successfully" });
   } catch (err: any) {
     await session.abortTransaction();
     session.endSession();
     res.status(500).json({ message: err.message });
   }
 };
-
 
 const allowedViewRoles = ["StoreManager", "StoreStaff", "Cashier"];
 
@@ -106,7 +101,7 @@ const batchPopulate = {
 
 /* Fetch all batches for logged-in branch */
 export const getBatchesByBranch = async (req: any, res: Response) => {
-  if (!allowedViewRoles.includes(req.user.Role)) {
+  if (!allowedViewRoles.includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
@@ -120,7 +115,7 @@ export const getBatchesByBranch = async (req: any, res: Response) => {
 
 /* Fetch batches by BranchProduct */
 export const getBatchesByBranchProduct = async (req: any, res: Response) => {
-  if (!allowedViewRoles.includes(req.user.Role)) {
+  if (!allowedViewRoles.includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
@@ -134,7 +129,7 @@ export const getBatchesByBranchProduct = async (req: any, res: Response) => {
 };
 
 export const getBatchesBySKU = async (req: any, res: Response) => {
-  if (!["StoreManager", "StoreStaff", "Cashier"].includes(req.user.Role)) {
+  if (!["StoreManager", "StoreStaff", "Cashier"].includes(req.user.role)) {
     return res.status(403).json({ message: "Access denied" });
   }
 
