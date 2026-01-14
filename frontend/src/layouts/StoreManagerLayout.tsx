@@ -7,9 +7,9 @@ const StoreManagerLayout = () => {
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       {/* Sidebar */}
       <StoreManagerSidebar />
-
       {/* Page Content */}
       <Box sx={{ flex: 1, p: 6, bgcolor: "background.default" }}>
+        
         <Outlet />
       </Box>
     </Box>

@@ -53,4 +53,8 @@ export const storeManagerMenu = [
     path: "/dashboard/store-manager/alerts",
     icon: <Notifications />,
   },
+  {
+    label: "Forecast",
+    path: "/dashboard/store-manager/forecast"
+  }
 ];
