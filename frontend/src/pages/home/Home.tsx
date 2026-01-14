@@ -2,8 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Box, Typography, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
+
 import logo from "../../assets/inventra-logo.jpg";
-import bgImage from "../../assets/home_bg1.jpg"; // change required
+import bgImage from "../../assets/home_bg1.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -23,195 +24,162 @@ const Home = () => {
       sx={{
         minHeight: "100vh",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        px: 2,
+        px: 3,
         position: "relative",
-        overflow: "hidden",
 
-        backgroundImage: isDark
-          ? `
-            linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
-            url(${bgImage})
-          `
-          : `
-            linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)),
-            url(${bgImage})
-          `,
-
+        /* ✅ PERFECTLY BALANCED OVERLAY */
+        backgroundImage: `
+          linear-gradient(
+            ${
+              isDark
+                ? "rgba(10, 25, 47, 0.78), rgba(10, 25, 47, 0.88)"
+                : "rgba(30, 41, 59, 0.35), rgba(30, 41, 59, 0.45)"
+            }
+          ),
+          url(${bgImage})
+        `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
 
+        /* ✅ Slight professional tuning */
         filter: isDark
-          ? "none"
-          : "brightness(1.12) contrast(1.2) saturate(1.15)",
-
-        transition: "all 0.6s ease",
-
-        boxShadow: isDark
-          ? "inset 0 0 120px rgba(0,0,0,0.7)"
-          : "inset 0 0 90px rgba(0,0,0,0.35)",
+          ? "saturate(0.95) brightness(1)"
+          : "saturate(1) brightness(0.95)",
       }}
     >
-      {/* 🔵 Animated Logo */}
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        whileHover={{
-          scale: 1.05,
-          boxShadow: "0px 0px 30px rgba(100, 181, 246, 0.6)",
-        }}
-        style={{
-          borderRadius: "50%",
-          padding: "6px",
-          background: isDark
-            ? "linear-gradient(135deg, #7e57c2, #512da8)"
-            : "linear-gradient(135deg, #7e57c2, #2196f3)",
-          display: "inline-block",
-          boxShadow: "0px 5px 25px rgba(33, 150, 243, 0.4)",
-          marginBottom: "30px",
-        }}
-      >
-        <img
-          src={logo}
-          alt="Inventra Logo"
+      {/* ================= CONTENT ================= */}
+      <Box maxWidth="900px">
+        {/* ================= LOGO ================= */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8 }}
           style={{
-            width: "180px",
-            height: "180px",
+            marginBottom: "28px",
+            display: "inline-block",
+            padding: "10px",
             borderRadius: "50%",
-            objectFit: "cover",
-            backgroundColor: "#fff",
-          }}
-        />
-      </motion.div>
-
-      {/* 🔤 Welcome Text */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-      >
-        <Typography
-          variant="h3"
-          fontWeight="bold"
-          gutterBottom
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 1,
+            background:
+              "linear-gradient(135deg, rgba(100,181,246,0.6), rgba(179,136,255,0.6))",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 0 40px rgba(100,181,246,0.35)",
           }}
         >
-          {/* 🌾 Beige Text */}
-          <span
+          <img
+            src={logo}
+            alt="Inventra Logo"
             style={{
-              color: "#E8DDC8",
-              textShadow: "0 1px 4px rgba(0,0,0,0.45)",
+              width: 150,
+              height: 150,
+              borderRadius: "50%",
+              background: "#fff",
+              objectFit: "contain",
+              padding: 10,
             }}
-          >
-            Welcome to
-          </span>
+          />
+        </motion.div>
 
-          {/* 🌈 Gradient Brand */}
-          <span
-            style={{
-              background:
-                "linear-gradient(135deg, #64ffda, #82b1ff, #b388ff)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              textShadow: "0 4px 14px rgba(0,0,0,0.7)",
-            }}
-          >
-            Inventra
-          </span>
-
-          {/* 🛒 Animated Cart */}
-          <motion.span
-            animate={{ x: [0, 8, 0] }}
-            transition={{
-              duration: 1.6,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{ display: "inline-block" }}
-          >
-            🛒
-          </motion.span>
-        </Typography>
-
-        {/* 🌬️ Subtitle with Shadowy Background */}
-        <Box
-          sx={{
-            display: "inline-block",
-            px: 3,
-            py: 1.2,
-            mt: 1,
-            mb: 4,
-            borderRadius: "14px",
-            background: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(6px)",
-            boxShadow:
-              "0 8px 25px rgba(0,0,0,0.45), inset 0 0 12px rgba(255,255,255,0.05)",
-          }}
+        {/* ================= HEADING ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.7 }}
         >
           <Typography
-            variant="h6"
+            variant="h3"
+            fontWeight={800}
             sx={{
-              background: "linear-gradient(90deg, #69f0ae, #40c4ff)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              letterSpacing: "0.4px",
-              textShadow: "0 2px 8px rgba(0,0,0,0.6)",
+              color: "#E3F2FD",
+              mb: 1,
+              letterSpacing: "0.5px",
             }}
           >
-            Manage products, suppliers, and stores with ease.
+            Welcome to{" "}
+            <span
+              style={{
+                background:
+                  "linear-gradient(135deg, #64ffda, #82b1ff, #b388ff)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Inventra
+            </span>
           </Typography>
+
+          {/* ================= SUBTITLE ================= */}
+          <Box
+            sx={{
+              display: "inline-block",
+              px: 3,
+              py: 1.2,
+              mt: 2,
+              mb: 5,
+              borderRadius: "999px",
+              background: "rgba(255,255,255,0.12)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(255,255,255,0.2)",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: "#B3E5FC",
+                fontWeight: 500,
+              }}
+            >
+              Smart inventory & order management for modern businesses
+            </Typography>
+          </Box>
+        </motion.div>
+
+        {/* ================= CTA BUTTONS ================= */}
+        <Box display="flex" justifyContent="center" gap={3} flexWrap="wrap">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
+            <Button
+              variant="contained"
+              size="large"
+              component="a"
+              href="/login"
+              sx={{
+                px: 5,
+                py: 1.4,
+                fontWeight: 700,
+                background:
+                  "linear-gradient(135deg, #2196f3, #21cbf3)",
+                boxShadow: "0 10px 30px rgba(33,150,243,0.45)",
+              }}
+            >
+              Login
+            </Button>
+          </motion.div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.96 }}>
+            <Button
+              variant="outlined"
+              size="large"
+              component="a"
+              href="/register"
+              sx={{
+                px: 5,
+                py: 1.4,
+                fontWeight: 700,
+                color: "#A5D6A7",
+                borderColor: "#A5D6A7",
+                "&:hover": {
+                  backgroundColor: "rgba(165,214,167,0.12)",
+                  borderColor: "#81C784",
+                },
+              }}
+            >
+              Register Your Business
+            </Button>
+          </motion.div>
         </Box>
-      </motion.div>
-
-      {/* 🔘 Buttons */}
-      <Box display="flex" gap={2}>
-        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            component="a"
-            href="/login"
-            sx={{
-              px: 4,
-              py: 1.2,
-              fontWeight: "bold",
-              "&:hover": {
-                boxShadow: "0px 0px 20px rgba(33, 150, 243, 0.7)",
-              },
-            }}
-          >
-            Login
-          </Button>
-        </motion.div>
-
-        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-          <Button
-            variant="contained"
-            color="success"
-            component="a"
-            href="/register"
-            sx={{
-              px: 4,
-              py: 1.2,
-              fontWeight: "bold",
-              "&:hover": {
-                boxShadow: "0px 0px 20px rgba(76, 175, 80, 0.7)",
-              },
-            }}
-          >
-            Register Your Business Now
-          </Button>
-        </motion.div>
       </Box>
     </Box>
   );
